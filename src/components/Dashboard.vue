@@ -26,14 +26,14 @@
           </form>
 
           <ul class="list-group">
-            <li v-for="todo in todos"
+            <li v-for="todo in todos[list]"
               class="list-group-item"
               :class="{completed: todo.completed}"
               :key="todo.id">
               <label>
                 <input type="checkbox" v-model="todo.completed">{{ todo.text }}
               </label>
-              <a @click.prevent="todos.splice(todos.indexOf(todo), 1)"
+              <a @click.prevent="todos[list].splice(todos.indexOf(todo), 1)"
                 class="delete pull-right"
                 href="#">X</a>
             </li>
@@ -46,7 +46,7 @@
 </template>
 
 <script>
-var STORAGE_FILE = 'todos.json'
+var STORAGE_FILE = 'todolists.json'
 
 export default {
   name: 'dashboard',
@@ -54,7 +54,8 @@ export default {
   data () {
     return {
       blockstack: window.blockstack,
-      todos: [],
+      todos: {},
+      list: 'a',
       todo: '',
       uidCount: 0
     }
@@ -77,7 +78,7 @@ export default {
       if (!this.todo.trim()) {
         return
       }
-      this.todos.unshift({
+      this.todos[this.list].unshift({
         id: this.uidCount++,
         text: this.todo.trim(),
         completed: false
@@ -90,11 +91,12 @@ export default {
       const decrypt = true
       blockstack.getFile(STORAGE_FILE, decrypt)
       .then((todosText) => {
-        var todos = JSON.parse(todosText || '[]')
-        todos.forEach(function (todo, index) {
+        var todos = JSON.parse(todosText || '{}')
+        todos[this.list] = todos[this.list] || []
+        todos[this.list].forEach(function (todo, index) {
           todo.id = index
         })
-        this.uidCount = todos.length
+        this.uidCount = todos[this.list].length
         this.todos = todos
       })
     },
