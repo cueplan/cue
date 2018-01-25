@@ -60,20 +60,16 @@ export default {
       uidCount: 0
     }
   },
-  watch: {
-    todos: {
-      handler: function (todos) {
-        const blockstack = this.blockstack
-        const encrypt = true
-        return blockstack.putFile(STORAGE_FILE, JSON.stringify(todos), encrypt)
-      },
-      deep: true
-    }
-  },
   mounted () {
     this.fetchData()
   },
   methods: {
+    pushData (todos) {
+      const blockstack = this.blockstack
+      const encrypt = true
+      return blockstack.putFile(STORAGE_FILE, JSON.stringify(todos), encrypt)
+    },
+
     addTodo () {
       if (!this.todo.trim()) {
         return
@@ -84,6 +80,7 @@ export default {
         completed: false
       })
       this.todo = ''
+      this.pushData(this.todos)
     },
 
     fetchData () {
