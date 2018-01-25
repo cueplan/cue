@@ -16,6 +16,15 @@
             </small>
 
           </h2>
+          <form @submit.prevent="changeListName" :disabled="! newListName">
+            <div class="input-group">
+              <input v-model="newListName" type="text" class="form-control" placeholder="List Name">
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="submit" :disabled="! newListName">Change</button>
+              </span>
+            </div>
+          </form>
+
           <form @submit.prevent="addTodo" :disabled="! todo">
             <div class="input-group">
               <input v-model="todo" type="text" class="form-control" placeholder="Write a todo..." autofocus>
@@ -55,7 +64,8 @@ export default {
     return {
       blockstack: window.blockstack,
       todos: {},
-      list: 'a',
+      list: 'Todos',
+      newListName: 'Todos',
       todo: '',
       uidCount: 0
     }
@@ -80,6 +90,16 @@ export default {
         completed: false
       })
       this.todo = ''
+      this.pushData(this.todos)
+    },
+
+    changeListName () {
+      if (!this.newListName.trim()) {
+        return
+      }
+      this.todos[this.newListName] = this.todos[this.list]
+      delete this.todos[this.list]
+      this.list = this.newListName
       this.pushData(this.todos)
     },
 
