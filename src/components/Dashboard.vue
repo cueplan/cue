@@ -1,21 +1,23 @@
 <template>
   <div class="hello">
-    <div class="container">
+    <div class="container-fluid">
       <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-          <h1 class="page-header">Blockstack Todo App
+        <div class="col-md-2">
+          <ul class="list-group">
+            <li v-for="list in Object.keys(todos)"
+              class="list-group-item"
+              :key="list">
+              <label>
+                <a @click.prevent="switchToList(list)"href="#">{{ list }}</a>
+              </label>
+            </li>
+          </ul>
+        </div>
+        <div class="col-md-8">
+          <h1 class="page-header">{{ newListName }}
             <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar">
             <small><span class="sign-out">(<a href="#" @click.prevent="signOut">Sign Out</a>)</span></small>
           </h1>
-          <h2 class="user-info">
-            <small>
-              {{ user.name() ? user.name() : 'Nameless Person'}}'s Todos
-            </small>
-            <small class="pull-right">
-            {{ user.username ? user.username : user.identityAddress }}
-            </small>
-
-          </h2>
           <form @submit.prevent="changeListName" :disabled="! newListName">
             <div class="input-group">
               <input v-model="newListName" type="text" class="form-control" placeholder="List Name">
@@ -93,8 +95,15 @@ export default {
       this.pushData(this.todos)
     },
 
+    switchToList (list) {
+      this.list = list
+      this.newListName = list
+    },
+
     changeListName () {
-      if (!this.newListName.trim()) {
+      var newName = this.newListName.trim()
+      if (!newName || this.todos[newName]) {
+        this.newListName = this.list
         return
       }
       this.todos[this.newListName] = this.todos[this.list]

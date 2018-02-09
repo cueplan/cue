@@ -132,9 +132,9 @@ $gray-850:                  #222222;
 $gray-900:                  #1c1c1c;
 $gray-950:                  #151515;
 
-$body-bg: $purple-110;
+$body-bg: $gray-100;
 
-$brand-primary: #fff;
+$brand-primary: #4CAF50;
 $brand-info: #8eb4cb;
 $brand-success: #2ab27b;
 $brand-warning: #cbb956;
@@ -142,10 +142,10 @@ $brand-danger: #bf5329;
 
 // 9. Fonts
 $icon-font-path: "~bootstrap-sass/assets/fonts/bootstrap/";
-$font-family-sans-serif: 'Source Code Pro',monospace;
+$font-family-sans-serif: "Lato", "sans serif";
 $font-size-base: 12px;
 $line-height-base: 1.6;
-$text-color: #fff;
+$text-color: $gray-850;
 
 // 10. Components
 $border-radius-base: 0px !default;
