@@ -8,24 +8,23 @@
               class="list-group-item"
               :key="list">
               <label>
-                <a @click.prevent="switchToList(list)"href="#">{{ list }}</a>
+                <a @click.prevent="switchToList(list)" href="#">{{ list }}</a>
+              </label>
+            </li>
+            <li class="list-group-item">
+              <label>
+                <a @click.prevent="newList" href="#">+ New List</a>
               </label>
             </li>
           </ul>
         </div>
         <div class="col-md-8">
-          <h1 class="page-header">{{ newListName }}
+          <h1 class="page-header">
+            <span class="title-label" v-show="!editingListName" @click.prevent="editingListName=true" >{{ newListName }}</span>
             <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar">
             <small><span class="sign-out">(<a href="#" @click.prevent="signOut">Sign Out</a>)</span></small>
+            <textarea v-model="newListName" v-show="editingListName" class="title-input" @keyup.prevent="editListNameKeyUp"></textarea>
           </h1>
-          <form @submit.prevent="changeListName" :disabled="! newListName">
-            <div class="input-group">
-              <input v-model="newListName" type="text" class="form-control" placeholder="List Name">
-              <span class="input-group-btn">
-                <button class="btn btn-default" type="submit" :disabled="! newListName">Change</button>
-              </span>
-            </div>
-          </form>
 
           <form @submit.prevent="addTodo" :disabled="! todo">
             <div class="input-group">
@@ -42,7 +41,7 @@
               :class="{completed: todo.completed}"
               :key="todo.id">
               <label>
-                <input type="checkbox" v-model="todo.completed">{{ todo.text }}
+                <input type="checkbox" class="item-checkbox" v-model="todo.completed">{{ todo.text }}
               </label>
               <a @click.prevent="todos[list].splice(todos.indexOf(todo), 1)"
                 class="delete pull-right"
@@ -69,7 +68,8 @@ export default {
       list: 'Todos',
       newListName: 'Todos',
       todo: '',
-      uidCount: 0
+      uidCount: 0,
+      editingListName: false
     }
   },
   mounted () {
@@ -95,9 +95,24 @@ export default {
       this.pushData(this.todos)
     },
 
+    editListNameKeyUp (e) {
+      var code = e.keyCode ? e.keyCode : e.which
+      if (code === 13) {  // Enter keycode
+        this.changeListName()
+        this.editingListName = false
+      }
+    },
+
     switchToList (list) {
       this.list = list
       this.newListName = list
+    },
+
+    newList () {
+      var listName = 'A New List'
+      this.todos[listName] = []
+      this.list = this.newListName = listName
+      this.pushdata(this.todos)
     },
 
     changeListName () {

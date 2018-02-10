@@ -47,3 +47,19 @@ html, body, #app {
   margin-top: 5px;
   margin-bottom: 30px
 }
+
+.item-checkbox {
+  background-color: aqua;
+}
+
+.title-input {
+  overflow: hidden;
+  word-wrap: break-word;
+  height: 46px;
+  border-radius: 3px;
+  -webkit-appearance: none;
+}
+
+.title-label {
+  margin: 0 0 9px;
+}
