@@ -20,10 +20,10 @@
         </div>
         <div class="col-md-8">
           <h1 class="page-header">
-            <span class="title-label" v-show="!editingListName" @click.prevent="editingListName=true" >{{ newListName }}</span>
+            <span class="title-label" v-show="!editingListName" @click.prevent="editListName" >{{ newListName }}</span>
             <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar">
             <small><span class="sign-out">(<a href="#" @click.prevent="signOut">Sign Out</a>)</span></small>
-            <textarea v-model="newListName" v-show="editingListName" class="title-input" @keyup.prevent="editListNameKeyUp"></textarea>
+            <textarea id="listNameInput" v-model="newListName" v-show="editingListName" spellcheck=false class="title-input" @keyup.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"></textarea>
           </h1>
 
           <form @submit.prevent="addTodo" :disabled="! todo">
@@ -95,12 +95,22 @@ export default {
       this.pushData(this.todos)
     },
 
+    editListName () {
+      this.editingListName = true
+      document.getElementById('listNameInput').focus()
+      document.getElementById('listNameInput').select()
+    },
+
     editListNameKeyUp (e) {
       var code = e.keyCode ? e.keyCode : e.which
       if (code === 13) {  // Enter keycode
-        this.changeListName()
-        this.editingListName = false
+        this.editListNameBlur(e)
       }
+    },
+
+    editListNameBlur (e) {
+      this.changeListName()
+      this.editingListName = false
     },
 
     switchToList (list) {
@@ -112,7 +122,7 @@ export default {
       var listName = 'A New List'
       this.todos[listName] = []
       this.list = this.newListName = listName
-      this.pushdata(this.todos)
+      this.pushData(this.todos)
     },
 
     changeListName () {
