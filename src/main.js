@@ -4,7 +4,7 @@ import Vue from 'vue'
 import App from './App'
 
 window.blockstack = require('blockstack')
-window.axios = require('axios')
+window.automerge = require('automerge')
 
 Vue.config.productionTip = false
 

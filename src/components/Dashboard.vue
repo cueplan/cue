@@ -3,27 +3,14 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <ul class="list-group">
-            <li v-for="list in Object.keys(todos)"
-              class="list-group-item"
-              :key="list">
-              <label>
-                <a @click.prevent="switchToList(list)" href="#">{{ list }}</a>
-              </label>
-            </li>
-            <li class="list-group-item">
-              <label>
-                <a @click.prevent="newList" href="#">+ New List</a>
-              </label>
-            </li>
-          </ul>
+          <listlist :lists="todos" v-on:switchList="switchToList" v-on:newList="newList"></listlist>
         </div>
         <div class="col-md-8">
           <h1 class="page-header">
-            <span class="title-label" v-show="!editingListName" @click.prevent="editListName" >{{ newListName }}</span>
+            <span class="title-label" v-if="!editingListName" @click.prevent="editListName" >{{ newListName }}</span>
             <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar">
             <small><span class="sign-out">(<a href="#" @click.prevent="signOut">Sign Out</a>)</span></small>
-            <textarea id="listNameInput" v-model="newListName" v-show="editingListName" spellcheck=false class="title-input" @keyup.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"></textarea>
+            <textarea id="listNameInput" v-model="newListName" v-if="editingListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"></textarea>
           </h1>
 
           <form @submit.prevent="addTodo" :disabled="! todo">
@@ -56,10 +43,13 @@
 </template>
 
 <script>
+import ListList from './ListList.vue'
+
 var STORAGE_FILE = 'todolists.json'
 
 export default {
   name: 'dashboard',
+  components: { listlist: ListList },
   props: ['user'],
   data () {
     return {
@@ -102,10 +92,7 @@ export default {
     },
 
     editListNameKeyUp (e) {
-      var code = e.keyCode ? e.keyCode : e.which
-      if (code === 13) {  // Enter keycode
-        this.editListNameBlur(e)
-      }
+      this.editListNameBlur(e)
     },
 
     editListNameBlur (e) {
