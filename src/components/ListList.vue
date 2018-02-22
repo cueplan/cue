@@ -1,6 +1,6 @@
 <template>
   <ul class="list-group">
-    <li v-for="list in Object.keys(lists)"
+    <li v-for="list in (lists.lists || []).map(l => l.name)"
       class="list-group-item"
       :key="list">
       <label>

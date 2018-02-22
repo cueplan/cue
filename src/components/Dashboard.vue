@@ -3,7 +3,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <listlist :lists="todos" v-on:switchList="switchToList" v-on:newList="newList"></listlist>
+          <listlist :lists="lists" v-on:switchList="switchToList" v-on:newList="newList"></listlist>
         </div>
         <div class="col-md-8">
           <h1 class="page-header">
@@ -23,14 +23,14 @@
           </form>
 
           <ul class="list-group">
-            <li v-for="todo in todos[list]"
+            <li v-for="todo in currentList.todos"
               class="list-group-item"
               :class="{completed: todo.completed}"
               :key="todo.id">
               <label>
                 <input type="checkbox" class="item-checkbox" v-model="todo.completed">{{ todo.text }}
               </label>
-              <a @click.prevent="todos[list].splice(todos.indexOf(todo), 1)"
+              <a @click.prevent="deleteTodo(todo.id)"
                 class="delete pull-right"
                 href="#">X</a>
             </li>
@@ -54,35 +54,61 @@ export default {
   data () {
     return {
       blockstack: window.blockstack,
-      todos: {},
+      automerge: window.automerge,
+      lists: window.automerge.init(),
       list: 'Todos',
       newListName: 'Todos',
       todo: '',
-      uidCount: 0,
       editingListName: false
+    }
+  },
+  computed: {
+    currentList: function () {
+      var lists = this.lists.lists
+      if (typeof lists === 'undefined') {
+        return { name: 'None', todos: [] }
+      }
+      console.log(this.lists)
+      console.log(lists)
+      return lists.find(l => l.name === this.list)
+    },
+    uidCount: function () {
+      return this.currentList.todos.length
     }
   },
   mounted () {
     this.fetchData()
   },
   methods: {
+    deleteTodo (todoId) {
+      var list = this.currentList
+      if (typeof list === 'undefined') {
+        return
+      }
+      list.todos.splice(list.todoId, 1)
+    },
+
     pushData (todos) {
       const blockstack = this.blockstack
       const encrypt = true
-      return blockstack.putFile(STORAGE_FILE, JSON.stringify(todos), encrypt)
+      return blockstack.putFile(STORAGE_FILE, this.automerge.save(this.lists), encrypt)
     },
 
     addTodo () {
       if (!this.todo.trim()) {
         return
       }
-      this.todos[this.list].unshift({
-        id: this.uidCount++,
-        text: this.todo.trim(),
-        completed: false
+
+      this.lists = this.automerge.change(this.lists, 'Add a todo', l => {
+        l.lists.find(l1 => l1.name === this.list).todos.unshift({
+          id: this.uidCount + 1,
+          text: this.todo.trim(),
+          completed: false
+        })
       })
+
       this.todo = ''
-      this.pushData(this.todos)
+      this.pushData(this.lists)
     },
 
     editListName () {
@@ -107,21 +133,25 @@ export default {
 
     newList () {
       var listName = 'A New List'
-      this.todos[listName] = []
+      this.lists = this.automerge.change(this.lists, 'Adding a new list', l => {
+        l.lists.push({ name: listName, todos: [] })
+      })
       this.list = this.newListName = listName
-      this.pushData(this.todos)
+      this.pushData(this.lists)
     },
 
     changeListName () {
       var newName = this.newListName.trim()
-      if (!newName || this.todos[newName]) {
+      if (!newName || this.lists.lists.find(l => l.name === newName)) {
         this.newListName = this.list
         return
       }
-      this.todos[this.newListName] = this.todos[this.list]
-      delete this.todos[this.list]
+
+      this.lists = this.automerge.change(this.lists, 'Changing list ' + this.list + ' to ' + this.newListName, l => {
+        l.lists.find(l => l.name === this.list).name = this.newListName
+      })
       this.list = this.newListName
-      this.pushData(this.todos)
+      this.pushData(this.lists)
     },
 
     fetchData () {
@@ -129,13 +159,26 @@ export default {
       const decrypt = true
       blockstack.getFile(STORAGE_FILE, decrypt)
       .then((todosText) => {
-        var todos = JSON.parse(todosText || '{}')
-        todos[this.list] = todos[this.list] || []
-        todos[this.list].forEach(function (todo, index) {
-          todo.id = index
-        })
-        this.uidCount = todos[this.list].length
-        this.todos = todos
+        console.log('todosText: ' + todosText)
+        var lists = this.automerge.load(todosText) || this.automerge.init()
+        console.log(lists)
+        console.log(typeof lists.lists)
+        if (typeof lists.lists === 'undefined') {
+          console.log('initializing lists')
+          lists = this.automerge.change(lists, 'Initialize lists of lists', l => {
+            l.lists = []
+          })
+          lists = this.automerge.change(lists, 'Create default list', l => {
+            l.lists = [ { name: 'Todos', todos: [] } ]
+          })
+          lists = this.automerge.change(lists, 'Set lastList', l => {
+            l.lastList = 'Todos'
+          })
+          console.log(lists)
+        }
+
+        this.list = 'Todos'
+        this.lists = lists
       })
     },
 
