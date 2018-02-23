@@ -1,10 +1,10 @@
 <template>
   <ul class="list-group">
-    <li v-for="list in (lists.lists || []).map(l => l.name)"
+    <li v-for="(list, index) in (lists.lists || [])"
       class="list-group-item"
-      :key="list">
+      :key="index">
       <label>
-        <a @click.prevent="switchToList(list)" href="#">{{ list }}</a>
+        <a @click.prevent="switchToList(index)" href="#">{{ list.name }}</a>
       </label>
     </li>
     <li class="list-group-item">
@@ -22,14 +22,11 @@ export default {
   data () {
     return {
       blockstack: window.blockstack,
-      automerge: window.automerge,
-      list: '',
-      newListName: ''
+      automerge: window.automerge
     }
   },
   methods: {
     switchToList (list) {
-      this.list = list
       this.$emit('switchList', list)
     },
 

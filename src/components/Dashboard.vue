@@ -23,14 +23,14 @@
           </form>
 
           <ul class="list-group">
-            <li v-for="todo in currentList.todos"
+            <li v-for="(todo, todoId) in currentList.todos"
               class="list-group-item"
               :class="{completed: todo.completed}"
-              :key="todo.id">
+              :key="todoId">
               <label>
                 <input type="checkbox" class="item-checkbox" v-model="todo.completed">{{ todo.text }}
               </label>
-              <a @click.prevent="deleteTodo(todo.id)"
+              <a @click.prevent="deleteTodo(todoId)"
                 class="delete pull-right"
                 href="#">X</a>
             </li>
@@ -56,7 +56,7 @@ export default {
       blockstack: window.blockstack,
       automerge: window.automerge,
       lists: window.automerge.init(),
-      list: 'Todos',
+      list: 0,
       newListName: 'Todos',
       todo: '',
       editingListName: false
@@ -65,12 +65,12 @@ export default {
   computed: {
     currentList: function () {
       var lists = this.lists.lists
-      if (typeof lists === 'undefined') {
+      if (typeof lists === 'undefined' || lists.length <= this.list) {
         return { name: 'None', todos: [] }
       }
       console.log(this.lists)
       console.log(lists)
-      return lists.find(l => l.name === this.list)
+      return lists[this.list]
     },
     uidCount: function () {
       return this.currentList.todos.length
@@ -81,11 +81,9 @@ export default {
   },
   methods: {
     deleteTodo (todoId) {
-      var list = this.currentList
-      if (typeof list === 'undefined') {
-        return
-      }
-      list.todos.splice(list.todoId, 1)
+      this.lists = this.automerge.change(this.lists, 'Delete a todo', l => {
+        l.lists[this.list].todos.splice(todoId, 1)
+      })
     },
 
     pushData (todos) {
@@ -100,7 +98,7 @@ export default {
       }
 
       this.lists = this.automerge.change(this.lists, 'Add a todo', l => {
-        l.lists.find(l1 => l1.name === this.list).todos.unshift({
+        l.lists[this.list].todos.unshift({
           id: this.uidCount + 1,
           text: this.todo.trim(),
           completed: false
@@ -128,7 +126,7 @@ export default {
 
     switchToList (list) {
       this.list = list
-      this.newListName = list
+      this.newListName = this.currentList.name
     },
 
     newList () {
@@ -136,21 +134,21 @@ export default {
       this.lists = this.automerge.change(this.lists, 'Adding a new list', l => {
         l.lists.push({ name: listName, todos: [] })
       })
-      this.list = this.newListName = listName
+      this.list = this.lists.lists.length - 1
+      this.newListName = this.currentList.name
       this.pushData(this.lists)
     },
 
     changeListName () {
       var newName = this.newListName.trim()
       if (!newName || this.lists.lists.find(l => l.name === newName)) {
-        this.newListName = this.list
+        this.newListName = this.currentList.name
         return
       }
 
       this.lists = this.automerge.change(this.lists, 'Changing list ' + this.list + ' to ' + this.newListName, l => {
-        l.lists.find(l => l.name === this.list).name = this.newListName
+        l.lists[this.list].name = this.newListName
       })
-      this.list = this.newListName
       this.pushData(this.lists)
     },
 
@@ -177,7 +175,7 @@ export default {
           console.log(lists)
         }
 
-        this.list = 'Todos'
+        this.list = 0
         this.lists = lists
       })
     },
