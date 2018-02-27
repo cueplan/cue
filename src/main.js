@@ -2,10 +2,12 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
+import Draggable from 'vuedraggable'
 
 window.blockstack = require('blockstack')
 window.automerge = require('automerge')
 
+Vue.use(Draggable)
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */

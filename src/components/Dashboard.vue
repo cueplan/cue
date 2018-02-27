@@ -3,7 +3,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <listlist :lists="lists" v-on:switchList="switchToList" v-on:newList="newList"></listlist>
+          <listlist :lists="lists" v-on:switchList="switchToList" v-on:newList="newList" v-on:reorderList="reorderList"></listlist>
         </div>
         <div class="col-md-8">
           <h1 class="page-header">
@@ -84,9 +84,10 @@ export default {
       this.lists = this.automerge.change(this.lists, 'Delete a todo', l => {
         l.lists[this.list].todos.splice(todoId, 1)
       })
+      this.pushData()
     },
 
-    pushData (todos) {
+    pushData () {
       const blockstack = this.blockstack
       const encrypt = true
       return blockstack.putFile(STORAGE_FILE, this.automerge.save(this.lists), encrypt)
@@ -106,7 +107,7 @@ export default {
       })
 
       this.todo = ''
-      this.pushData(this.lists)
+      this.pushData()
     },
 
     editListName () {
@@ -129,6 +130,13 @@ export default {
       this.newListName = this.currentList.name
     },
 
+    reorderList (oldIndex, newIndex) {
+      this.lists = this.automerge.change(this.lists, 'Moving a list', l => {
+        l.lists.splice(newIndex, 0, l.lists.splice(oldIndex, 1)[0])
+      })
+      this.pushData()
+    },
+
     newList () {
       var listName = 'A New List'
       this.lists = this.automerge.change(this.lists, 'Adding a new list', l => {
@@ -136,7 +144,7 @@ export default {
       })
       this.list = this.lists.lists.length - 1
       this.newListName = this.currentList.name
-      this.pushData(this.lists)
+      this.pushData()
     },
 
     changeListName () {
@@ -149,7 +157,8 @@ export default {
       this.lists = this.automerge.change(this.lists, 'Changing list ' + this.list + ' to ' + this.newListName, l => {
         l.lists[this.list].name = this.newListName
       })
-      this.pushData(this.lists)
+
+      this.pushData()
     },
 
     fetchData () {
@@ -173,6 +182,10 @@ export default {
             l.lastList = 'Todos'
           })
           console.log(lists)
+
+          this.list = 0
+          this.lists = lists
+          this.pushData()
         }
 
         this.list = 0

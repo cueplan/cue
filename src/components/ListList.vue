@@ -1,28 +1,42 @@
 <template>
-  <ul class="list-group">
-    <li v-for="(list, index) in (lists.lists || [])"
-      class="list-group-item"
+  <draggable  element="ul" class="list-group" v-model="listOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
+    <li v-for="(list, index) in (listOrder || [])"
+      class="list-group-item draggable"
       :key="index">
       <label>
         <a @click.prevent="switchToList(index)" href="#">{{ list.name }}</a>
       </label>
     </li>
-    <li class="list-group-item">
+    <li slot="footer" class="list-group-item">
       <label>
         <a @click.prevent="newList" href="#">+ New List</a>
       </label>
     </li>
-  </ul>
+  </draggable>
 </template>
 
 <script>
+import draggable from 'vuedraggable'
+
 export default {
   name: 'listlist',
   props: ['lists'],
+  components: {
+    draggable
+  },
   data () {
     return {
       blockstack: window.blockstack,
       automerge: window.automerge
+    }
+  },
+  computed: {
+    listOrder: {
+      get: function () {
+        return this.lists.lists || []
+      },
+      set: function (value) {
+      }
     }
   },
   methods: {
@@ -32,6 +46,14 @@ export default {
 
     newList () {
       this.$emit('newList')
+    },
+
+    onDragEnd (evt) {
+      var itemEl = evt.item  // dragged HTMLElement
+      console.log(itemEl)
+      console.log(evt.oldIndex)  // element's old index within old parent
+      console.log(evt.newIndex)  // element's new index within new parent
+      this.$emit('reorderList', evt.oldIndex, evt.newIndex)
     }
   }
 }
