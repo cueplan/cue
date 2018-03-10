@@ -11,7 +11,7 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
-    "automerge": "^0.7.0",
+    "automerge": "^0.7.1",
     "axios": "^0.16.1",
     "blockstack": "0.14.2",
     "bootstrap-sass": "^3.3.7",
