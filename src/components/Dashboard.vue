@@ -134,6 +134,13 @@ export default {
       this.lists = this.automerge.change(this.lists, 'Moving a list', l => {
         l.lists.splice(newIndex, 0, l.lists.splice(oldIndex, 1)[0])
       })
+      if (this.list > oldIndex && this.list <= newIndex) {
+        this.list--
+      } else if (this.list >= newIndex && this.list < oldIndex) {
+        this.list++
+      } else if (this.list === oldIndex) {
+        this.list = newIndex
+      }
       this.pushData()
     },
 
