@@ -55,6 +55,7 @@ export default {
     return {
       blockstack: window.blockstack,
       automerge: window.automerge,
+      uuid: window.uuid,
       lists: window.automerge.init(),
       list: 0,
       newListName: 'Todos',
@@ -68,8 +69,6 @@ export default {
       if (typeof lists === 'undefined' || lists.length <= this.list) {
         return { name: 'None', todos: [] }
       }
-      console.log(this.lists)
-      console.log(lists)
       return lists[this.list]
     },
     uidCount: function () {
@@ -173,12 +172,8 @@ export default {
       const decrypt = true
       blockstack.getFile(STORAGE_FILE, decrypt)
       .then((todosText) => {
-        console.log('todosText: ' + todosText)
         var lists = this.automerge.load(todosText) || this.automerge.init()
-        console.log(lists)
-        console.log(typeof lists.lists)
         if (typeof lists.lists === 'undefined') {
-          console.log('initializing lists')
           lists = this.automerge.change(lists, 'Initialize lists of lists', l => {
             l.lists = []
           })
@@ -188,15 +183,16 @@ export default {
           lists = this.automerge.change(lists, 'Set lastList', l => {
             l.lastList = 'Todos'
           })
-          console.log(lists)
 
           this.list = 0
           this.lists = lists
+          this.newListName = this.currentList.name
           this.pushData()
         }
 
         this.list = 0
         this.lists = lists
+        this.newListName = this.currentList.name
       })
     },
 
