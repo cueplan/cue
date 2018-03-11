@@ -22,9 +22,9 @@
             </div>
           </form>
 
-          <ul class="list-group">
-            <li v-for="(todo, todoId) in currentList.todos"
-              class="list-group-item"
+          <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
+            <li v-for="(todo, todoId) in todoOrder"
+              class="list-group-item draggable"
               :class="{completed: todo.completed}"
               :key="todoId">
               <label>
@@ -34,7 +34,7 @@
                 class="delete pull-right"
                 href="#">X</a>
             </li>
-          </ul>
+          </draggable>
 
         </div>
       </div>
@@ -44,12 +44,13 @@
 
 <script>
 import ListList from './ListList.vue'
+import draggable from 'vuedraggable'
 
 var STORAGE_FILE = 'todolists.json'
 
 export default {
   name: 'dashboard',
-  components: { listlist: ListList },
+  components: { listlist: ListList, draggable },
   props: ['user'],
   data () {
     return {
@@ -73,6 +74,13 @@ export default {
     },
     uidCount: function () {
       return this.currentList.todos.length
+    },
+    todoOrder: {
+      get: function () {
+        return this.currentList.todos || []
+      },
+      set: function (value) {
+      }
     }
   },
   mounted () {
@@ -83,6 +91,14 @@ export default {
       this.lists = this.automerge.change(this.lists, 'Delete a todo', l => {
         l.lists[this.list].todos.splice(todoId, 1)
       })
+      this.pushData()
+    },
+
+    onDragEnd (evt) {
+      this.lists = this.automerge.change(this.lists, 'Moving a todo', l => {
+        l.lists[this.list].todos.splice(evt.newIndex, 0, l.lists[this.list].todos.splice(evt.oldIndex, 1)[0])
+      })
+
       this.pushData()
     },
 
