@@ -56,10 +56,16 @@ html, body, #app {
   overflow: hidden;
   word-wrap: break-word;
   height: 42px;
-  border-radius: 3px;
   -webkit-appearance: none;
   padding: 0px;
   box-sizing: border-box;
+  border-color: transparent;
+  background-color: $body-bg;
+}
+
+.title-input:focus {
+  border-radius: 3px;
+  background-color: white;
 }
 
 .title-label {
