@@ -3,13 +3,13 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <listlist :lists="lists" v-on:switchList="switchToList" v-on:newList="newList" v-on:reorderList="reorderList"></listlist>
+          <listlist :lists="listmeta" v-on:switchList="switchToList" v-on:newList="newList" v-on:reorderList="reorderList"></listlist>
         </div>
         <div class="col-md-8">
           <h1 class="page-header">
             <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar">
             <small><span class="sign-out">(<a href="#" @click.prevent="signOut">Sign Out</a>)</span></small>
-            <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"></input>
+            <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
           </h1>
 
           <form @submit.prevent="addTodo" :disabled="! todo">
@@ -59,8 +59,7 @@ export default {
       lists: window.automerge.init(),
       list: 0,
       newListName: 'Todos',
-      todo: '',
-      editingListName: false
+      todo: ''
     }
   },
   computed: {
@@ -79,6 +78,14 @@ export default {
         return this.currentList.todos || []
       },
       set: function (value) {
+      }
+    },
+    listmeta: {
+      get: function () {
+        if (typeof this.lists.lists === 'undefined') {
+          return []
+        }
+        return this.lists.lists.map(l => l.name)
       }
     }
   },
@@ -125,7 +132,6 @@ export default {
     },
 
     editListName () {
-      this.editingListName = true
       document.getElementById('listNameInput').focus()
       document.getElementById('listNameInput').select()
     },
@@ -137,7 +143,6 @@ export default {
 
     editListNameBlur (e) {
       this.changeListName()
-      this.editingListName = false
     },
 
     switchToList (list) {

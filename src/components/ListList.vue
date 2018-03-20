@@ -4,7 +4,7 @@
       class="list-group-item draggable"
       :key="index">
       <label>
-        <a @click.prevent="switchToList(index)" href="#">{{ list.name }}</a>
+        <a @click.prevent="switchToList(index)" href="#">{{ list }}</a>
       </label>
     </li>
     <li slot="footer" class="list-group-item">
@@ -26,14 +26,13 @@ export default {
   },
   data () {
     return {
-      blockstack: window.blockstack,
-      automerge: window.automerge
+      blockstack: window.blockstack
     }
   },
   computed: {
     listOrder: {
       get: function () {
-        return this.lists.lists || []
+        return this.lists || []
       },
       set: function (value) {
       }
