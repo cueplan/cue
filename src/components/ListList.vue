@@ -1,6 +1,6 @@
 <template>
   <draggable  element="ul" class="list-group" v-model="listOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
-    <li v-for="(list, index) in (listOrder || [])"
+    <li v-for="(list, index) in listOrder"
       class="list-group-item draggable"
       :key="index">
       <label>
@@ -24,17 +24,13 @@ export default {
   components: {
     draggable
   },
-  data () {
-    return {
-      blockstack: window.blockstack
-    }
-  },
   computed: {
     listOrder: {
       get: function () {
         return this.lists || []
       },
       set: function (value) {
+        // No setter, the onDragEnd will let the parent Vue update accordingly
       }
     }
   },
@@ -48,10 +44,6 @@ export default {
     },
 
     onDragEnd (evt) {
-      var itemEl = evt.item  // dragged HTMLElement
-      console.log(itemEl)
-      console.log(evt.oldIndex)  // element's old index within old parent
-      console.log(evt.newIndex)  // element's new index within new parent
       this.$emit('reorderList', evt.oldIndex, evt.newIndex)
     }
   }
