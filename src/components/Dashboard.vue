@@ -22,7 +22,15 @@
           </form>
 
           <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
-            <li v-for="(todo, todoId) in todoOrder"
+            <singletodo
+               v-for="(todo, todoId) in todoOrder"
+               :todo="todo"
+               :todoId="todoId"
+               :key="todoId"
+               v-on:deleteTodo="deleteTodo">
+            </singletodo>
+
+            <!-- <li v-for="(todo, todoId) in todoOrder"
               class="list-group-item draggable"
               :class="{completed: todo.completed}"
               :key="todoId">
@@ -32,7 +40,7 @@
               <a @click.prevent="deleteTodo(todoId)"
                 class="delete pull-right"
                 href="#">X</a>
-            </li>
+            </li> -->
           </draggable>
 
         </div>
@@ -43,13 +51,14 @@
 
 <script>
 import ListList from './ListList.vue'
+import SingleTodo from './SingleTodo.vue'
 import draggable from 'vuedraggable'
 
 var STORAGE_FILE = 'todolists.json'
 
 export default {
   name: 'dashboard',
-  components: { listlist: ListList, draggable },
+  components: { listlist: ListList, draggable, singletodo: SingleTodo },
   props: ['user'],
   data () {
     return {
