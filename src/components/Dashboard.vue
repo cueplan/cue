@@ -28,7 +28,8 @@
                :todoId="todoId"
                :key="todoId"
                v-on:deleteTodo="deleteTodo"
-               v-on:completeTodo="completeTodo">
+               v-on:completeTodo="completeTodo"
+               v-on:changeTodoText="changeTodoText">
             </singletodo>
           </draggable>
 
@@ -101,6 +102,13 @@ export default {
     completeTodo (todoId, value) {
       this.lists = this.automerge.change(this.lists, 'Complete a todo', l => {
         l.lists[this.list].todos[todoId].completed = value
+      })
+      this.pushData()
+    },
+
+    changeTodoText (todoId, value) {
+      this.lists = this.automerge.change(this.lists, 'Change todo text', l => {
+        l.lists[this.list].todos[todoId].text = value
       })
       this.pushData()
     },
@@ -245,10 +253,6 @@ label {
   }
 }
 .list-group-item {
-  &.completed label {
-    text-decoration: line-through;
-  }
-
   .delete {
     display: none;
   }

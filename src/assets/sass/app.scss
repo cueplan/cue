@@ -73,3 +73,18 @@ html, body, #app {
   padding-top: 5px;
   line-height: 1.2em;
 }
+
+.todo-input {
+  overflow: hidden;
+  word-wrap: break-word;
+  height: 22px;
+  -webkit-appearance: none;
+  padding: 0px;
+  box-sizing: border-box;
+  border-color: transparent;
+}
+
+.todo-input:focus {
+  border-radius: 3px;
+}
+
