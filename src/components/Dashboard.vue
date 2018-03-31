@@ -27,20 +27,9 @@
                :todo="todo"
                :todoId="todoId"
                :key="todoId"
-               v-on:deleteTodo="deleteTodo">
+               v-on:deleteTodo="deleteTodo"
+               v-on:completeTodo="completeTodo">
             </singletodo>
-
-            <!-- <li v-for="(todo, todoId) in todoOrder"
-              class="list-group-item draggable"
-              :class="{completed: todo.completed}"
-              :key="todoId">
-              <label>
-                <input type="checkbox" class="item-checkbox" v-model="todo.completed">{{ todo.text }}
-              </label>
-              <a @click.prevent="deleteTodo(todoId)"
-                class="delete pull-right"
-                href="#">X</a>
-            </li> -->
           </draggable>
 
         </div>
@@ -105,6 +94,13 @@ export default {
     deleteTodo (todoId) {
       this.lists = this.automerge.change(this.lists, 'Delete a todo', l => {
         l.lists[this.list].todos.splice(todoId, 1)
+      })
+      this.pushData()
+    },
+
+    completeTodo (todoId, value) {
+      this.lists = this.automerge.change(this.lists, 'Complete a todo', l => {
+        l.lists[this.list].todos[todoId].completed = value
       })
       this.pushData()
     },

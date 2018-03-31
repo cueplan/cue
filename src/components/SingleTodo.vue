@@ -3,7 +3,7 @@
         class="list-group-item draggable"
         :class="{completed: todo.completed}">
         <label>
-        <input type="checkbox" class="item-checkbox" v-model="todo.completed">{{ todoText }}
+        <input type="checkbox" class="item-checkbox" v-model="completed">{{ todoText }}
         </label>
         <a @click.prevent="deleteTodo(todoId)"
         class="delete pull-right"
@@ -18,10 +18,18 @@ export default {
   computed: {
     todoText: {
       get: function () {
-        return this.todo.text || []
+        return this.todo.text
       },
       set: function (value) {
         // No setter, the onDragEnd will let the parent Vue update accordingly
+      }
+    },
+    completed: {
+      get: function () {
+        return this.todo.completed
+      },
+      set: function (value) {
+        this.$emit('completeTodo', this.todoId, value)
       }
     }
   },
