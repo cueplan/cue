@@ -144,11 +144,6 @@ export default {
       this.pushData()
     },
 
-    editListName () {
-      document.getElementById('listNameInput').focus()
-      document.getElementById('listNameInput').select()
-    },
-
     editListNameKeyUp (e) {
       this.editListNameBlur(e)
       document.getElementById('listNameInput').blur()
