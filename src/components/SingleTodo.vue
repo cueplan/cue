@@ -4,7 +4,7 @@
         :class="{completed: todo.completed}">
         <label>
         <input type="checkbox" class="item-checkbox" v-model="completed"/>
-        <input v-model="newTodoText" spellcheck=false class="todo-input" @keyup.enter.prevent="editTodo" @blur.prevent="editTodo"/>
+        <input v-model="todoText" spellcheck=false class="todo-input"/>
         </label>
         <a @click.prevent="deleteTodo(todoId)"
         class="delete pull-right"
@@ -16,12 +16,15 @@
 export default {
   name: 'singletodo',
   props: ['todo', 'todoId'],
-  data () {
-    return {
-      newTodoText: this.todo.text
-    }
-  },
   computed: {
+    todoText: {
+      get: function () {
+        return this.todo.text
+      },
+      set: function (value) {
+        this.$emit('changeTodoText', this.todoId, value)
+      }
+    },
     completed: {
       get: function () {
         return this.todo.completed
@@ -34,10 +37,6 @@ export default {
   methods: {
     deleteTodo (todoId) {
       this.$emit('deleteTodo', todoId)
-    },
-
-    editTodo (e) {
-      this.$emit('changeTodoText', this.todoId, this.newTodoText)
     }
   }
 }
