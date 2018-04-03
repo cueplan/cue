@@ -54,11 +54,16 @@ export default {
     return {
       blockstack: window.blockstack,
       automerge: window.automerge,
-      uuid: window.uuid,
+      lodash: window.lodash,
       lists: window.automerge.init(),
       list: 0,
       newListName: 'Todos',
-      todo: ''
+      todo: '',
+      throttledPushData: window.lodash.debounce(function () {
+        const blockstack = this.blockstack
+        const encrypt = true
+        return blockstack.putFile(STORAGE_FILE, this.automerge.save(this.lists), encrypt)
+      }, 3000, { maxWait: 60000 })
     }
   },
   computed: {
@@ -122,9 +127,7 @@ export default {
     },
 
     pushData () {
-      const blockstack = this.blockstack
-      const encrypt = true
-      return blockstack.putFile(STORAGE_FILE, this.automerge.save(this.lists), encrypt)
+      this.throttledPushData()
     },
 
     addTodo () {

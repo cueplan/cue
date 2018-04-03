@@ -7,6 +7,7 @@ import Draggable from 'vuedraggable'
 window.blockstack = require('blockstack')
 window.automerge = require('automerge')
 window.uuid = require('uuid/v4')
+window.lodash = require('lodash')
 
 Vue.use(Draggable)
 Vue.config.productionTip = false
