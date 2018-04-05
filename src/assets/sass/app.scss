@@ -43,6 +43,13 @@ html, body, #app {
   font-size: 12px;
 }
 
+.saving-status {
+  float: right;
+  padding-top:8px;
+  padding-right:10px;
+  font-size: 12px;
+}
+
 .user-info {
   margin-top: 5px;
   margin-bottom: 30px
@@ -58,6 +65,7 @@ html, body, #app {
   height: 42px;
   -webkit-appearance: none;
   padding: 0px;
+  width: 70%;
   box-sizing: border-box;
   border-color: transparent;
   background-color: $body-bg;

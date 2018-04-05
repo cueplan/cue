@@ -9,6 +9,7 @@
           <h1 class="page-header">
             <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar">
             <small><span class="sign-out">(<a href="#" @click.prevent="signOut">Sign Out</a>)</span></small>
+            <small><span class="saving-status">{{ saving }}</span></small>
             <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
           </h1>
 
@@ -59,11 +60,9 @@ export default {
       list: 0,
       newListName: 'Todos',
       todo: '',
-      throttledPushData: window.lodash.debounce(function () {
-        const blockstack = this.blockstack
-        const encrypt = true
-        return blockstack.putFile(STORAGE_FILE, this.automerge.save(this.lists), encrypt)
-      }, 3000, { maxWait: 60000 })
+      saved: true,
+      saving: '',
+      throttledPushData: window.lodash.debounce(this.pushDataNow, 3000, { maxWait: 60000 })
     }
   },
   computed: {
@@ -92,6 +91,9 @@ export default {
         return this.lists.lists.map(l => l.name)
       }
     }
+  },
+  created () {
+    window.addEventListener('beforeunload', this.beforeUnload)
   },
   mounted () {
     this.fetchData()
@@ -127,7 +129,24 @@ export default {
     },
 
     pushData () {
+      this.saved = false
+      this.saving = 'Saving...'
       this.throttledPushData()
+    },
+
+    pushDataNow () {
+      const blockstack = this.blockstack
+      const encrypt = true
+      blockstack.putFile(STORAGE_FILE, this.automerge.save(this.lists), encrypt)
+
+      this.saved = true
+      this.saving = 'Saved'
+    },
+
+    beforeUnload (e) {
+      if (!this.saved) {
+        e.returnValue = "Latest changes haven't been saved. Are you sure?"
+      }
     },
 
     addTodo () {
