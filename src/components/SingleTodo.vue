@@ -4,7 +4,7 @@
         :class="{completed: todo.completed}">
         <label>
         <input type="checkbox" class="item-checkbox" v-model="completed"/>
-        <input v-model="todoText" spellcheck=false class="todo-input"/>
+        <input v-model="todoText" spellcheck=false class="todo-input" @keyup.enter.prevent="insertAfter(todoId, $event)"/>
         </label>
         <a @click.prevent="deleteTodo(todoId)"
         class="delete pull-right"
@@ -37,6 +37,10 @@ export default {
   methods: {
     deleteTodo (todoId) {
       this.$emit('deleteTodo', todoId)
+    },
+
+    insertAfter (todoId, e) {
+      this.$emit('insertAfter', todoId)
     }
   }
 }

@@ -13,7 +13,7 @@
             <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
           </h1>
 
-          <form @submit.prevent="addTodo" :disabled="! todo">
+          <!-- <form @submit.prevent="addTodo" :disabled="! todo">
             <div class="input-group">
               <input v-model="todo" type="text" class="form-control" placeholder="Write a todo..." autofocus>
               <span class="input-group-btn">
@@ -21,7 +21,7 @@
               </span>
             </div>
           </form>
-
+ -->
           <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
             <singletodo
                v-for="(todo, todoId) in todoOrder"
@@ -30,7 +30,8 @@
                :key="todoId"
                v-on:deleteTodo="deleteTodo"
                v-on:completeTodo="completeTodo"
-               v-on:changeTodoText="changeTodoText">
+               v-on:changeTodoText="changeTodoText"
+               v-on:insertAfter="insertTodoAfter">
             </singletodo>
           </draggable>
 
@@ -102,6 +103,9 @@ export default {
     deleteTodo (todoId) {
       this.lists = this.automerge.change(this.lists, 'Delete a todo', l => {
         l.lists[this.list].todos.splice(todoId, 1)
+        if (l.lists[this.list].todos.length === 0) {
+          l.lists[this.list].todos.splice(0, 0, { id: 0, text: '', completed: false })
+        }
       })
       this.pushData()
     },
@@ -117,6 +121,14 @@ export default {
       this.lists = this.automerge.change(this.lists, 'Change todo text', l => {
         l.lists[this.list].todos[todoId].text = value
       })
+      this.pushData()
+    },
+
+    insertTodoAfter (todoId, value) {
+      this.lists = this.automerge.change(this.lists, 'Insert todo', l => {
+        l.lists[this.list].todos.splice(todoId + 1, 0, { id: this.uidCount + 1, text: value || '', completed: false })
+      })
+
       this.pushData()
     },
 
@@ -197,7 +209,14 @@ export default {
     newList () {
       var listName = 'A New List'
       this.lists = this.automerge.change(this.lists, 'Adding a new list', l => {
-        l.lists.push({ name: listName, todos: [] })
+        l.lists.push({
+          name: listName,
+          todos: [{
+            id: 0,
+            text: '',
+            completed: false
+          }]
+        })
       })
       this.list = this.lists.lists.length - 1
       this.newListName = this.currentList.name
