@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <div>
-      <h1>Cue</h1>
+      <img id="logo" src="../assets/images/logo.png" height="256" width="768"/>
       <button class="btn btn-default" @click.prevent="signIn">Sign In With Blockstack</button>
     </div>
   </div>
@@ -32,5 +32,15 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+#logo {
+  display: block;
+}
+
+.btn {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 </style>
