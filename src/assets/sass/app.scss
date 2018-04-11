@@ -7,12 +7,10 @@
 
 html, body, #app {
   height: 100%;
-  background-color: $brand-primary;
 }
 
 .avatar {
   width: 30px;
-  float: right;
   border-radius: 2px;
 }
 
@@ -34,18 +32,19 @@ html, body, #app {
 }
 
 .page-header {
+  margin-top: 22px;
   margin-bottom: 0px;
+  padding: 10px;
+  background-color: white;
 }
 
 .sign-out {
-  float: right;
   padding-top:8px;
   padding-right:10px;
   font-size: 12px;
 }
 
 .saving-status {
-  float: right;
   padding-top:8px;
   padding-right:10px;
   font-size: 12px;
@@ -69,7 +68,6 @@ html, body, #app {
   width: 70%;
   box-sizing: border-box;
   border-color: transparent;
-  background-color: $body-bg;
 }
 
 .title-input:focus {

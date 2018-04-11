@@ -132,13 +132,13 @@ $gray-850:                  #222222;
 $gray-900:                  #1c1c1c;
 $gray-950:                  #151515;
 
-$body-bg: $gray-100;
-
 $brand-primary: #2D842F;
 $brand-info: #8eb4cb;
 $brand-success: #2ab27b;
 $brand-warning: #cbb956;
 $brand-danger: #bf5329;
+
+$body-bg: $brand-primary;
 
 // 9. Fonts
 $icon-font-path: "~bootstrap-sass/assets/fonts/bootstrap/";

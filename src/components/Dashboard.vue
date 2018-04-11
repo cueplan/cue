@@ -3,36 +3,37 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <listlist :lists="listmeta" v-on:switchList="switchToList" v-on:newList="newList" v-on:reorderList="reorderList"></listlist>
-        </div>
-        <div class="col-md-8">
-          <h1 class="page-header">
+          <label class="list-group-item">
+            <img src="../assets/images/logo.png" height="32" width="96"/>
             <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar">
-            <small><span class="sign-out">(<a href="#" @click.prevent="signOut">Sign Out</a>)</span></small>
-            <small><span class="saving-status">{{ saving }}</span></small>
+            <div>
+              <small><span class="sign-out">(<a href="#" @click.prevent="signOut">Sign Out</a>)</span></small>
+              <small><span class="saving-status">{{ saving }}</span></small>
+            </div>
+          </label>
+          <listlist
+            :lists="listmeta"
+            v-on:switchList="switchToList"
+            v-on:newList="newList"
+            v-on:reorderList="reorderList"
+          />
+        </div>
+        <div class="col-md-10">
+          <h1 class="page-header">
             <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
           </h1>
 
-          <!-- <form @submit.prevent="addTodo" :disabled="! todo">
-            <div class="input-group">
-              <input v-model="todo" type="text" class="form-control" placeholder="Write a todo..." autofocus>
-              <span class="input-group-btn">
-                <button class="btn btn-default" type="submit" :disabled="! todo">Add</button>
-              </span>
-            </div>
-          </form>
- -->
           <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
             <singletodo
-               v-for="(todo, todoId) in todoOrder"
-               :todo="todo"
-               :todoId="todoId"
-               :key="todoId"
-               v-on:deleteTodo="deleteTodo"
-               v-on:completeTodo="completeTodo"
-               v-on:changeTodoText="changeTodoText"
-               v-on:insertAfter="insertTodoAfter">
-            </singletodo>
+              v-for="(todo, todoId) in todoOrder"
+              :todo="todo"
+              :todoId="todoId"
+              :key="todoId"
+              v-on:deleteTodo="deleteTodo"
+              v-on:completeTodo="completeTodo"
+              v-on:changeTodoText="changeTodoText"
+              v-on:insertAfter="insertTodoAfter"
+            />
           </draggable>
 
         </div>
