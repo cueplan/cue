@@ -3,14 +3,16 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-2">
-          <label class="list-group-item">
+          <div class="logo dropdown">
             <img src="../assets/images/logo.png" height="32" width="96"/>
-            <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar">
-            <div>
-              <small><span class="sign-out">(<a href="#" @click.prevent="signOut">Sign Out</a>)</span></small>
-              <small><span class="saving-status">{{ saving }}</span></small>
-            </div>
-          </label>
+            <small><span class="saving-status">{{ saving }}</span></small>
+            <a data-target="#" data-toggle="dropdown" class="dropdown-toggle">
+              <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar"><b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="sign-out"><a href="#" @click.prevent="signOut">Sign Out</a></li>
+            </ul>
+          </div>
           <listlist
             :lists="listmeta"
             v-on:switchList="switchToList"

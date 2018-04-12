@@ -9,9 +9,14 @@ html, body, #app {
   height: 100%;
 }
 
+.logo {
+  padding: 10px;
+}
+
 .avatar {
   width: 30px;
   border-radius: 2px;
+  float: right;
 }
 
 .btn {
