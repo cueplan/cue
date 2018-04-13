@@ -4,7 +4,7 @@
       <div class="row">
         <div class="col-md-2">
           <div class="logo dropdown">
-            <img src="../assets/images/logo.png" height="32" width="96"/>
+            <img src="../assets/images/logo.png" height="48" width="144"/>
             <small><span class="saving-status">{{ saving }}</span></small>
             <a data-target="#" data-toggle="dropdown" class="dropdown-toggle">
               <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar"><b class="caret"></b>
