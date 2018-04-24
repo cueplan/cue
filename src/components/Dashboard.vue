@@ -5,13 +5,13 @@
         <div class="col-md-2">
           <div class="logo dropdown">
             <img src="../assets/images/logo.png" height="48" width="144"/>
-            <small><span class="saving-status">{{ saving }}</span></small>
-            <a data-target="#" data-toggle="dropdown" class="dropdown-toggle">
-              <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar"><b class="caret"></b>
-            </a>
-            <ul class="dropdown-menu">
+            <b-dropdown boundary="window" right class="user-dropdown" toggleClass="user-toggle">
+              <template slot="button-content">
+                <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar"/>
+              </template>
               <li class="sign-out"><a href="#" @click.prevent="signOut">Sign Out</a></li>
-            </ul>
+            </b-dropdown>
+            <!-- <small><span class="saving-status">{{ saving }}</span></small> -->
           </div>
           <listlist
             :lists="listmeta"
@@ -245,6 +245,7 @@ export default {
       const decrypt = true
       blockstack.getFile(STORAGE_FILE, decrypt)
       .then((todosText) => {
+        console.log(todosText)
         var lists = this.automerge.load(todosText) || this.automerge.init()
         if (typeof lists.lists === 'undefined') {
           lists = this.automerge.change(lists, 'Initialize lists of lists', l => {
@@ -291,6 +292,7 @@ label {
     margin-right: 5px;
   }
 }
+
 .list-group-item {
   .delete {
     display: none;

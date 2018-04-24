@@ -3,6 +3,7 @@
 import Vue from 'vue'
 import App from './App'
 import Draggable from 'vuedraggable'
+import BootstrapVue from 'bootstrap-vue'
 
 window.blockstack = require('blockstack')
 window.automerge = require('automerge')
@@ -10,6 +11,7 @@ window.uuid = require('uuid/v4')
 window.lodash = require('lodash')
 
 Vue.use(Draggable)
+Vue.use(BootstrapVue)
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
