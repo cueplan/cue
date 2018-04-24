@@ -2,8 +2,8 @@
   <div class="hello">
     <div class="container-fluid">
       <div class="row">
-        <div class="col-md-2">
-          <div class="logo dropdown">
+        <div class="col-md-2 navbar">
+          <div class="logo">
             <img src="../assets/images/logo.png" height="48" width="144"/>
             <b-dropdown boundary="window" right class="user-dropdown" toggleClass="user-toggle">
               <template slot="button-content">
