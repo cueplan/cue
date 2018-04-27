@@ -2,16 +2,15 @@
   <div class="hello">
     <div class="container-fluid">
       <div class="row">
-        <div class="col-md-2 navbar">
+        <div class="col-md-3 navbar">
           <div class="logo">
             <img src="../assets/images/logo.png" height="48" width="144"/>
-            <b-dropdown boundary="window" right class="user-dropdown" toggleClass="user-toggle">
+            <b-dropdown boundary="viewport" right class="user-dropdown" toggleClass="user-toggle">
               <template slot="button-content">
                 <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar"/>
               </template>
               <li class="sign-out"><a href="#" @click.prevent="signOut">Sign Out</a></li>
             </b-dropdown>
-            <!-- <small><span class="saving-status">{{ saving }}</span></small> -->
           </div>
           <listlist
             :lists="listmeta"
@@ -20,9 +19,13 @@
             v-on:reorderList="reorderList"
           />
         </div>
-        <div class="col-md-10">
+        <div class="col-md-9">
           <h1 class="page-header">
             <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
+            <b-dropdown boundary="viewport" right text="" class="list-dropdown" toggleClass="list-toggle">
+              <b-dropdown-item class="dropdown-item" @click="deleteList">Delete List</b-dropdown-item>
+            </b-dropdown>
+            <small><span class="saving-status">{{ saving }}</span></small>
           </h1>
 
           <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
@@ -209,6 +212,19 @@ export default {
       this.pushData()
     },
 
+    deleteList () {
+      this.lists = this.automerge.change(this.lists, 'Delete a list', l => {
+        l.lists.splice(this.list, 1)
+      })
+
+      if (this.list >= this.lists.lists.length) {
+        this.list--
+      }
+
+      this.newListName = this.currentList.name
+      this.pushData()
+    },
+
     newList () {
       var listName = 'A New List'
       this.lists = this.automerge.change(this.lists, 'Adding a new list', l => {
@@ -245,7 +261,6 @@ export default {
       const decrypt = true
       blockstack.getFile(STORAGE_FILE, decrypt)
       .then((todosText) => {
-        console.log(todosText)
         var lists = this.automerge.load(todosText) || this.automerge.init()
         if (typeof lists.lists === 'undefined') {
           lists = this.automerge.change(lists, 'Initialize lists of lists', l => {

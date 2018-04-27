@@ -12,6 +12,7 @@ html, body, #app {
 
 .navbar {
   min-width: 220px;
+  max-width: 330px;
 }
 
 .logo {
@@ -37,6 +38,28 @@ html, body, #app {
 .user-toggle {
   padding: 0px;
   margin: 8px;
+}
+
+.list-dropdown {
+  float: right;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.6;
+  color: #333333;
+  white-space: nowrap;
+}
+
+.list-toggle {
+  font-family: "FontAwesome";
+  font-size: 20pt;
+  padding: 0px 6px;
+  color: gray;
+  background-color: white;
 }
 
 .creds {
@@ -65,7 +88,7 @@ html, body, #app {
   padding-top:8px;
   padding-right:10px;
   font-size: 12px;
-  color: white;
+  float: right;
 }
 
 .user-info {
