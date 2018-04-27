@@ -34,6 +34,7 @@
               :todo="todo"
               :todoId="todoId"
               :key="todoId"
+              :focus="focusedId === todoId"
               v-on:deleteTodo="deleteTodo"
               v-on:completeTodo="completeTodo"
               v-on:changeTodoText="changeTodoText"
@@ -69,6 +70,7 @@ export default {
       todo: '',
       saved: true,
       saving: '',
+      focusedId: null,
       throttledPushData: window.lodash.debounce(this.pushDataNow, 3000, { maxWait: 60000 })
     }
   },
@@ -135,6 +137,8 @@ export default {
         l.lists[this.list].todos.splice(todoId + 1, 0, { id: this.uidCount + 1, text: value || '', completed: false })
       })
 
+      this.focusedId = todoId + 1
+
       this.pushData()
     },
 
@@ -196,6 +200,7 @@ export default {
     switchToList (list) {
       this.list = list
       this.newListName = this.currentList.name
+      this.focusedId = null
     },
 
     reorderList (oldIndex, newIndex) {
@@ -222,6 +227,7 @@ export default {
       }
 
       this.newListName = this.currentList.name
+      this.focusedId = null
       this.pushData()
     },
 
@@ -239,6 +245,7 @@ export default {
       })
       this.list = this.lists.lists.length - 1
       this.newListName = this.currentList.name
+      this.focusedId = null
       this.pushData()
     },
 

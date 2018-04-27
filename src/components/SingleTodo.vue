@@ -4,7 +4,7 @@
         :class="{completed: todo.completed}">
         <label>
         <input type="checkbox" class="item-checkbox" v-model="completed"/>
-        <input v-model="todoText" spellcheck=false class="todo-input" @keyup.enter.prevent="insertAfter(todoId, $event)"/>
+        <input v-model="todoText" spellcheck=false class="todo-input" v-focus="focus" @keyup.enter.prevent="insertAfter(todoId, $event)"/>
         </label>
         <a @click.prevent="deleteTodo(todoId)"
         class="delete pull-right"
@@ -13,9 +13,12 @@
 </template>
 
 <script>
+import { focus } from 'vue-focus'
+
 export default {
   name: 'singletodo',
-  props: ['todo', 'todoId'],
+  directives: { focus: focus },
+  props: ['todo', 'todoId', 'focus'],
   computed: {
     todoText: {
       get: function () {
