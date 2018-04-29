@@ -4,7 +4,14 @@
         :class="{completed: todo.completed}">
         <label>
         <input type="checkbox" class="item-checkbox" v-model="completed"/>
-        <input v-model="todoText" spellcheck=false class="todo-input" v-focus="focus" @keyup.enter.prevent="insertAfter(todoId, $event)"/>
+        <input
+          v-model="todoText"
+          spellcheck=false
+          class="todo-input"
+          v-focus="focus"
+          @blur="$emit('todoBlurred', todoId)"
+          @focus="$emit('todoFocused', todoId)"
+          @keyup.enter.prevent="insertAfter(todoId, $event)"/>
         </label>
         <a @click.prevent="deleteTodo(todoId)"
         class="delete pull-right"

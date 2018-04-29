@@ -39,6 +39,8 @@
               v-on:completeTodo="completeTodo"
               v-on:changeTodoText="changeTodoText"
               v-on:insertAfter="insertTodoAfter"
+              v-on:todoBlurred="todoBlurred"
+              v-on:todoFocused="todoFocused"
             />
           </draggable>
 
@@ -140,6 +142,14 @@ export default {
       this.focusedId = todoId + 1
 
       this.pushData()
+    },
+
+    todoBlurred (todoId) {
+      this.focusedId = null
+    },
+
+    todoFocused (todoId) {
+      this.focusedId = todoId
     },
 
     onDragEnd (evt) {
