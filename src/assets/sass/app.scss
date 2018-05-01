@@ -125,11 +125,13 @@ html, body, #app {
 .todo-input {
   overflow: hidden;
   word-wrap: break-word;
-  height: 22px;
+  height: 24px;
   -webkit-appearance: none;
   padding: 0px;
   box-sizing: border-box;
   border-color: transparent;
+  width: 80%;
+  resize: none;
 }
 
 .todo-input:focus {

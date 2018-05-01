@@ -1,10 +1,11 @@
 <template>
-   <li
-        class="list-group-item draggable"
+   <label
+        class="list-group-item draggable todo-row"
         :class="{completed: todo.completed}">
-        <label>
         <input type="checkbox" class="item-checkbox" v-model="completed"/>
+        <span class="checkmark"></span>
         <input
+          type="text"
           v-model="todoText"
           spellcheck=false
           class="todo-input"
@@ -12,11 +13,10 @@
           @blur="$emit('todoBlurred', todoId)"
           @focus="$emit('todoFocused', todoId)"
           @keyup.enter.prevent="insertAfter(todoId, $event)"/>
-        </label>
         <a @click.prevent="deleteTodo(todoId)"
         class="delete pull-right"
         href="#">X</a>
-    </li>
+    </label>
 </template>
 
 <script>
@@ -58,6 +58,15 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
+@import "../assets/sass/variables";
+
+.todo-row {
+  padding: 2px 2px;
+}
+
+.item-checkbox {
+  margin: 0px;
+}
 
 input::placeholder {
   color: grey;
@@ -84,5 +93,69 @@ label {
       color: red;
     }
   }
+}
+
+/* Customize the label (the container) */
+.todo-row {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+.todo-row input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Create a custom checkbox */
+.checkmark {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #fff;
+}
+
+/* On mouse-over, add a grey background color */
+.todo-row:hover input[type="checkbox"] ~ .checkmark {
+  background-color: #ccc;
+}
+
+/* When the checkbox is checked, add a blue background */
+.todo-row input[type="checkbox"]:checked ~ .checkmark {
+  background-color: #fff;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the checkmark when checked */
+.todo-row input[type="checkbox"]:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the checkmark/indicator */
+.todo-row .checkmark:after {
+  left: 9px;
+  top: 5px;
+  width: 5px;
+  height: 10px;
+  border: solid $brand-primary;
+  border-width: 0 3px 3px 0;
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
 }
 </style>

@@ -73,6 +73,7 @@ export default {
       saved: true,
       saving: '',
       focusedId: null,
+      pendingFocusId: null,
       throttledPushData: window.lodash.debounce(this.pushDataNow, 3000, { maxWait: 60000 })
     }
   },
@@ -139,16 +140,20 @@ export default {
         l.lists[this.list].todos.splice(todoId + 1, 0, { id: this.uidCount + 1, text: value || '', completed: false })
       })
 
+      this.pendingFocusId = todoId + 1
       this.focusedId = todoId + 1
 
       this.pushData()
     },
 
     todoBlurred (todoId) {
-      this.focusedId = null
+      console.log('Blurred ' + todoId + ', pending ' + this.pendingFocusId)
+      this.focusedId = this.pendingFocusId
+      this.pendingFocusId = null
     },
 
     todoFocused (todoId) {
+      console.log('Focused ' + todoId)
       this.focusedId = todoId
     },
 
