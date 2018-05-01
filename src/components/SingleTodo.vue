@@ -121,7 +121,7 @@ label {
 .checkmark {
   position: absolute;
   top: 2px;
-  left: 4px;
+  left: 6px;
   height: 21px;
   width: 21px;
   background-color: #fff;
