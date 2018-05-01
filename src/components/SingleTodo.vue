@@ -105,6 +105,7 @@ label {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  border-width: 0px;
 }
 
 /* Hide the browser's default checkbox */
@@ -117,19 +118,21 @@ label {
 /* Create a custom checkbox */
 .checkmark {
   position: absolute;
-  top: 3px;
-  left: 0;
+  top: 2px;
+  left: 3px;
   height: 25px;
   width: 25px;
   background-color: #fff;
+  border-radius: 3px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: white;
 }
 
-/* On mouse-over, add a grey background color */
 .todo-row:hover input[type="checkbox"] ~ .checkmark {
-  background-color: #ccc;
+  border-color: $brand-primary;
 }
 
-/* When the checkbox is checked, add a blue background */
 .todo-row input[type="checkbox"]:checked ~ .checkmark {
   background-color: #fff;
 }
@@ -150,7 +153,7 @@ label {
 .todo-row .checkmark:after {
   left: 9px;
   top: 5px;
-  width: 5px;
+  width: 6px;
   height: 10px;
   border: solid $brand-primary;
   border-width: 0 3px 3px 0;

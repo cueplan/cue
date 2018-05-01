@@ -132,6 +132,8 @@ html, body, #app {
   border-color: transparent;
   width: 80%;
   resize: none;
+  outline-color: $brand-primary;
+  font-weight: 400;
 }
 
 .todo-input:focus {
