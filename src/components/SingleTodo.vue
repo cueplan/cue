@@ -12,7 +12,9 @@
           v-focus="focus"
           @blur="$emit('todoBlurred', todoId)"
           @focus="$emit('todoFocused', todoId)"
-          @keyup.enter.prevent="insertAfter(todoId, $event)"/>
+          @keyup.enter.prevent="insertAfter(todoId, $event)"
+          @keydown.up.prevent="$emit('focusPrev', todoId)"
+          @keydown.down.prevent="$emit('focusNext', todoId)"/>
         <a @click.prevent="deleteTodo(todoId)"
         class="delete pull-right"
         href="#">X</a>
@@ -99,7 +101,7 @@ label {
 .todo-row {
   display: block;
   position: relative;
-  padding-left: 35px;
+  padding: 0px 0px 1px 35px;
   cursor: pointer;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -119,9 +121,9 @@ label {
 .checkmark {
   position: absolute;
   top: 2px;
-  left: 3px;
-  height: 25px;
-  width: 25px;
+  left: 4px;
+  height: 21px;
+  width: 21px;
   background-color: #fff;
   border-radius: 3px;
   border-style: solid;
@@ -151,8 +153,8 @@ label {
 
 /* Style the checkmark/indicator */
 .todo-row .checkmark:after {
-  left: 9px;
-  top: 5px;
+  left: 7px;
+  top: 3px;
   width: 6px;
   height: 10px;
   border: solid $brand-primary;

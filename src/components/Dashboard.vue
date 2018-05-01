@@ -41,6 +41,8 @@
               v-on:insertAfter="insertTodoAfter"
               v-on:todoBlurred="todoBlurred"
               v-on:todoFocused="todoFocused"
+              v-on:focusPrev="focusPrevTodo"
+              v-on:focusNext="focusNextTodo"
             />
           </draggable>
 
@@ -155,6 +157,14 @@ export default {
     todoFocused (todoId) {
       console.log('Focused ' + todoId)
       this.focusedId = todoId
+    },
+
+    focusPrevTodo (todoId) {
+      this.pendingFocusId = this.focusedId = Math.max(todoId - 1, 0)
+    },
+
+    focusNextTodo (todoId) {
+      this.pendingFocusId = this.focusedId = Math.min(todoId + 1, this.currentList.todos.length - 1)
     },
 
     onDragEnd (evt) {
