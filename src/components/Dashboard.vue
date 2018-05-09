@@ -149,13 +149,11 @@ export default {
     },
 
     todoBlurred (todoId) {
-      console.log('Blurred ' + todoId + ', pending ' + this.pendingFocusId)
       this.focusedId = this.pendingFocusId
       this.pendingFocusId = null
     },
 
     todoFocused (todoId) {
-      console.log('Focused ' + todoId)
       this.focusedId = todoId
     },
 
