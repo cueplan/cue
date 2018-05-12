@@ -1,9 +1,9 @@
 {
   "name": "Cue",
-  "start_url": "http://blockstack-todos.appartisan.com",
+  "start_url": "http://app.cueplan.com",
   "description": "A decentralized personal planner built on Blockstack",
   "icons": [{
-    "src": "http://blockstack-todos.appartisan.com/logo.png",
+    "src": "http://app.cueplan.com/logo.png",
     "sizes": "400x400",
     "type": "image/png"
   }]
