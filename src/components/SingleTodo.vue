@@ -39,7 +39,7 @@ export default {
     },
     completed: {
       get: function () {
-        return this.todo.completed
+        return this.todo.status === 'completed'
       },
       set: function (value) {
         this.$emit('completeTodo', this.todoId, value)
