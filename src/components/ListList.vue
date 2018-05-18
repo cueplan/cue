@@ -1,18 +1,22 @@
 <template>
-  <draggable  element="ul" class="list-group" v-model="listOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
-    <li v-for="(list, index) in listOrder"
-      class="list-group-item draggable"
-      :key="index">
-      <label>
-        <a @click.prevent="switchToList(index)" href="#">{{ list }}</a>
-      </label>
-    </li>
-    <li slot="footer" class="list-group-item">
-      <label>
-        <a @click.prevent="newList" href="#">+ New List</a>
-      </label>
-    </li>
-  </draggable>
+  <div>
+    <a @click.prevent="switchToCollection('active')" href="#">Active</a>
+    <a @click.prevent="switchToCollection('archive')" href="#">Archive</a>
+    <draggable  element="ul" class="list-group" v-model="listOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
+      <li v-for="(list, index) in listOrder"
+        class="list-group-item draggable"
+        :key="index">
+        <label>
+          <a @click.prevent="switchToList(index)" href="#">{{ list }}</a>
+        </label>
+      </li>
+      <li slot="footer" class="list-group-item">
+        <label>
+          <a @click.prevent="newList" href="#">+ New List</a>
+        </label>
+      </li>
+    </draggable>
+  </div>
 </template>
 
 <script>
@@ -35,6 +39,10 @@ export default {
     }
   },
   methods: {
+    switchToCollection (collection) {
+      this.$emit('switchCollection', collection)
+    },
+
     switchToList (list) {
       this.$emit('switchList', list)
     },
