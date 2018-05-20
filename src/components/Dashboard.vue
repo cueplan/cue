@@ -12,14 +12,17 @@
               <li class="sign-out"><a href="#" @click.prevent="signOut">Sign Out</a></li>
             </b-dropdown>
           </div>
-          <listlist
-            :lists="listmeta"
-            :collection="collection"
-            v-on:switchList="switchToList"
-            v-on:newList="newList"
-            v-on:reorderList="reorderList"
-            v-on:switchCollection="switchToCollection"
-          />
+          <div>
+            <a @click.prevent="switchToCollection('active')" href="#">Current</a>
+            <a @click.prevent="switchToCollection('archive')" href="#">Archive</a>
+            <listlist
+              :lists="listmeta"
+              :collection="collection"
+              v-on:switchList="switchToList"
+              v-on:newList="newList"
+              v-on:reorderList="reorderList"
+            />
+          </div>
         </div>
         <div class="col-md-9">
           <h1 class="page-header">
@@ -87,7 +90,10 @@ export default {
   },
   computed: {
     currentList: function () {
-      return this.lists.lists[this.lists.collections.active[this.listIndex]]
+      return this.lists.lists[this.currentCollection[this.listIndex]]
+    },
+    currentCollection: function () {
+      return this.lists.collections[this.collection]
     },
     todoOrder: {
       get: function () {
@@ -101,7 +107,7 @@ export default {
         if (typeof this.lists.lists === 'undefined' || typeof this.lists.collections === 'undefined') {
           return []
         }
-        return this.lists.collections.active.map(l => this.lists.lists[l].name)
+        return this.currentCollection.map(l => this.lists.lists[l].name)
       }
     }
   },
@@ -135,7 +141,8 @@ export default {
     initializeData () {
       this.lists = { lists: [] }
       this.newList()
-      return this.pushDataNow()
+      this.throttledPushData()
+      return this.throttledPushData.flush()
     },
 
     upgradeData () {
@@ -170,7 +177,8 @@ export default {
         ll.todos = lists.lists[0].todos.map((t, i) => { return { id: i, text: t.text, status: t.completed ? 'completed' : 'incomplete' } })
       })
 
-      this.pushDataNow()
+      this.throttledPushData()
+      return this.throttledPushData.flush()
       .then(() => {
         lists = window.automerge.change(lists, 'upgrading', l => l.lists.splice(0, 1))
         return this.upgradeOnev1List(lists)
@@ -227,12 +235,13 @@ export default {
           this.lists.collections = { active: this.lists.lists.map((l, i) => i), archive: [] }
         }
 
-        this.newListName = this.lists.lists[this.lists.collections.active[this.listIndex]].name
+        this.newListName = this.currentList.name
 
-        return blockstack.getFile('/lists/' + this.lists.lists[this.lists.collections.active[this.listIndex]].id + '.json', decrypt)
+        return blockstack.getFile('/lists/' + this.currentList.id + '.json', decrypt)
       })
       .then((contents) => {
         this.loadedList = window.automerge.load(contents)
+        console.log(this.currentCollection)
       })
     },
 
@@ -241,12 +250,19 @@ export default {
     },
 
     switchToList (listIndex) {
-      this.listIndex = listIndex
-      this.newListName = this.currentList.name
-      const decrypt = true
+      if (this.listIndex === listIndex) {
+        return
+      }
 
-      this.loadedList = window.automerge.init()
-      window.blockstack.getFile('/lists/' + this.lists.lists[this.lists.collections.active[listIndex]].id + '.json', decrypt)
+      this.throttledPushData.flush()
+      .then(() => {
+        this.listIndex = listIndex
+        this.newListName = this.currentList.name
+        const decrypt = true
+
+        this.loadedList = window.automerge.init()
+        return window.blockstack.getFile('/lists/' + this.currentList.id + '.json', decrypt)
+      })
       .then((contents) => {
         this.loadedList = window.automerge.load(contents) || window.automerge.init()
       })
@@ -255,7 +271,7 @@ export default {
     },
 
     reorderList (oldIndex, newIndex) {
-      this.lists.collections.active.splice(newIndex, 0, this.lists.collections.active.splice(oldIndex, 1)[0])
+      this.currentCollection.splice(newIndex, 0, this.currentCollection.splice(oldIndex, 1)[0])
       if (this.listIndex > oldIndex && this.listIndex <= newIndex) {
         this.listIndex--
       } else if (this.listIndex >= newIndex && this.listIndex < oldIndex) {
@@ -268,9 +284,9 @@ export default {
     },
 
     deleteList () {
-      this.lists.collections.active.splice(this.listIndex, 1)
+      this.currentCollection.splice(this.listIndex, 1)
 
-      if (this.listIndex >= this.lists.collections.active.length) {
+      if (this.listIndex >= this.currentCollection.length) {
         this.listIndex--
       }
 
@@ -284,7 +300,7 @@ export default {
       const listId = Date.now()
       var listName = today.toLocaleDateString()
       this.lists.lists.push({ name: listName, id: listId })
-      this.lists.collections.active.push(this.lists.lists.length - 1)
+      this.currentCollection.push(this.lists.lists.length - 1)
       this.loadedList = window.automerge.init()
       this.loadedList = window.automerge.change(this.loadedList, 'New empty list', ll => {
         ll.name = today.toLocaleDateString()
@@ -292,7 +308,7 @@ export default {
         ll.todos = [ { id: 0, text: '', state: 'incomplete' } ]
       })
 
-      this.listIndex = this.lists.collections.active.length - 1
+      this.listIndex = this.currentCollection.length - 1
       this.newListName = this.currentList.name
       this.focusedId = null
       this.pushData()
@@ -305,7 +321,7 @@ export default {
         return
       }
 
-      this.lists.lists[this.lists.collections.active[this.listIndex]].name = this.newListName
+      this.currentList.name = this.newListName
       this.loadedList = window.automerge.change(this.loadedList, 'Changing list name', ll => {
         ll.name = this.newListName
       })
