@@ -210,6 +210,7 @@ export default {
       const decrypt = true
       return blockstack.getFile(OLD_STORAGE_FILE, decrypt)
       .then((todosText) => {
+        console.log(todosText)
         var lists = window.automerge.load(todosText) || window.automerge.init()
         if (typeof lists.lists === 'undefined') {
           return Promise.reject()
@@ -241,20 +242,27 @@ export default {
       })
       .then((contents) => {
         this.loadedList = window.automerge.load(contents)
-        console.log(this.currentCollection)
       })
     },
 
     switchToCollection (collection) {
-      this.collection = collection
-    },
-
-    switchToList (listIndex) {
-      if (this.listIndex === listIndex) {
+      if (this.collection === collection) {
         return
       }
 
-      this.throttledPushData.flush()
+      (this.throttledPushData.flush() || Promise.resolve())
+      .then(() => {
+        this.collection = collection
+        this.switchToList(0, true)
+      })
+    },
+
+    switchToList (listIndex, force) {
+      if (this.listIndex === listIndex && !force) {
+        return
+      }
+
+      (this.throttledPushData.flush() || Promise.resolve())
       .then(() => {
         this.listIndex = listIndex
         this.newListName = this.currentList.name
