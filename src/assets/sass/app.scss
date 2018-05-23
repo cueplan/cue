@@ -6,9 +6,10 @@
 @import "node_modules/bootstrap/scss/bootstrap";
 @import 'node_modules/bootstrap-vue/dist/bootstrap-vue';
 
-.navbar {
+.nav {
   min-width: 220px;
   max-width: 330px;
+  flex-direction: column;
 }
 
 .logo {
@@ -111,4 +112,16 @@
 
 .todo-input:focus {
   border-radius: 3px;
+}
+
+a {
+  color: $brand-primary
+}
+
+.nav a {
+  font-weight: bold;
+}
+
+.nav .list-group-item {
+  padding: 6px 12px;
 }
