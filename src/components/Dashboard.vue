@@ -5,15 +5,16 @@
         <div class="col-md-3 navbar">
           <div class="logo">
             <img src="../assets/images/logo.png" height="48" width="144"/>
-            <b-dropdown boundary="viewport" right class="user-dropdown" toggleClass="user-toggle">
+            <b-dropdown boundary="viewport" no-caret right class="user-dropdown" toggleClass="user-toggle">
               <template slot="button-content">
                 <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar"/>
               </template>
               <li class="sign-out"><a href="#" @click.prevent="signOut">Sign Out</a></li>
               <li class="sign-out"><a href="#" @click.prevent="backupData">Backup Data</a></li>
+              <li class="sign-out"><b-form-file placeholder="Restore Backup" no-drop accept=".json" v-on:change="restoreBackup"/></li>
             </b-dropdown>
           </div>
-          <div>
+          <div class="listlist">
             <a @click.prevent="switchToCollection('active')" href="#">Current</a>
             <a @click.prevent="switchToCollection('archive')" href="#">Archive</a>
             <listlist
@@ -86,6 +87,7 @@ export default {
       saving: '',
       focusedId: null,
       pendingFocusId: null,
+      restoreFile: null,
       throttledPushData: window.lodash.debounce(this.pushDataNow, 3000, { maxWait: 60000 })
     }
   },
@@ -471,6 +473,10 @@ export default {
       element.click()
 
       document.body.removeChild(element)
+    },
+
+    restoreBackup (e) {
+      console.log(e.target.files[0])
     }
   }
 }
@@ -506,4 +512,5 @@ label {
     }
   }
 }
+
 </style>
