@@ -10,6 +10,7 @@
                 <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar"/>
               </template>
               <li class="sign-out"><a href="#" @click.prevent="signOut">Sign Out</a></li>
+              <li class="sign-out"><a href="#" @click.prevent="backupData">Backup Data</a></li>
             </b-dropdown>
           </div>
           <div>
@@ -414,6 +415,62 @@ export default {
 
     signOut () {
       window.blockstack.signUserOut(window.location.href)
+    },
+
+    backupData () {
+      var listsToBackup = []
+      listsToBackup.push({
+        contents: JSON.parse(JSON.stringify(this.lists)),
+        encrypt: true,
+        path: listsFile,
+        automerge: false
+      })
+      listsToBackup.push({
+        path: dataVersionFile,
+        contents: this.dataVersion,
+        encrypt: false,
+        automerge: false
+      })
+      listsToBackup.currentList = 0
+
+      this.backupOneList(listsToBackup)
+      .then((backupLists) => {
+        this.download('backup.json', JSON.stringify(backupLists))
+      })
+    },
+
+    backupOneList (lists) {
+      console.log(lists[0].contents)
+      if (lists.currentList >= lists[0].contents.lists.length) {
+        delete lists.currentList
+        return Promise.resolve(lists)
+      }
+
+      var listPath = '/lists/' + lists[0].contents.lists[lists.currentList].id + '.json'
+      return window.blockstack.getFile(listPath, {decrypt: true})
+      .then((currentList) => {
+        lists.push({
+          contents: window.automerge.load(currentList),
+          encrypt: true,
+          automerge: true,
+          path: listPath
+        })
+        lists.currentList++
+        return this.backupOneList(lists)
+      })
+    },
+
+    download (filename, text) {
+      var element = document.createElement('a')
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
+      element.setAttribute('download', filename)
+
+      element.style.display = 'none'
+      document.body.appendChild(element)
+
+      element.click()
+
+      document.body.removeChild(element)
     }
   }
 }
