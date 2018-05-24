@@ -3,9 +3,7 @@
     <li v-for="(list, index) in listOrder"
       class="list-group-item draggable"
       :key="index">
-      <label>
-        <a @click.prevent="switchToList(index)" href="#">{{ list }}</a>
-      </label>
+      <a @click.prevent="switchToList(index)" href="#">{{ list }}</a>
     </li>
     <li slot="footer" class="list-group-item">
       <label>
@@ -49,38 +47,3 @@ export default {
   }
 }
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="scss" scoped>
-
-input::placeholder {
-  color: grey;
-}
-
-label {
-  margin-bottom: 0;
-  // width: 100%;
-  cursor: pointer;
-  input[type="checkbox"] {
-    margin-right: 5px;
-  }
-}
-.list-group-item {
-  &.completed label {
-    text-decoration: line-through;
-  }
-
-  .delete {
-    display: none;
-  }
-
-  &:hover .delete {
-    display: inline;
-    color: grey;
-    &:hover {
-      text-decoration: none;
-      color: red;
-    }
-  }
-}
-</style>

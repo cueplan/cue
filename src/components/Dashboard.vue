@@ -2,17 +2,18 @@
   <div class="hello">
     <div class="container-fluid">
       <div class="row">
-        <div class="col-md-3">
+        <div class="col-sm-auto">
           <div class="nav">
             <div class="logo">
               <img src="../assets/images/logo.png" height="48" width="144"/>
-              <b-dropdown boundary="viewport" no-caret class="user-dropdown dropleft" toggleClass="user-toggle">
+              <b-dropdown boundary="viewport" no-caret right class="user-dropdown dropleft" toggleClass="user-toggle">
                 <template slot="button-content">
                   <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar"/>
                 </template>
                 <b-dropdown-item @click.prevent="signOut">Sign Out</b-dropdown-item>
                 <b-dropdown-item @click.prevent="backupData">Backup Data</b-dropdown-item>
-                <b-dropdown-item><b-form-file placeholder="Restore Backup" no-drop accept=".json" v-on:change="restoreBackup"/></b-dropdown-item>
+                <b-dropdown-item @click.prevent="$refs.restoreinput.click()">Restore From Backup ...</b-dropdown-item>
+                <input type="file" ref="restoreinput" id="restoreinput" accept=".json" v-on:change="restoreBackup"/>
               </b-dropdown>
             </div>
             <div class="listlist">
@@ -28,10 +29,10 @@
             </div>
           </div>
         </div>
-        <div class="col-md-9">
+        <div class="col-sm">
           <h1 class="page-header">
             <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
-            <b-dropdown boundary="viewport" right text="" class="list-dropdown" toggleClass="list-toggle">
+            <b-dropdown boundary="viewport" right text="" no-caret class="list-dropdown" toggleClass="list-toggle">
               <b-dropdown-item class="dropdown-item" @click="deleteList">Delete List</b-dropdown-item>
             </b-dropdown>
             <small><span class="saving-status">{{ saving }}</span></small>
@@ -499,20 +500,4 @@ label {
     margin-right: 5px;
   }
 }
-
-.list-group-item {
-  .delete {
-    display: none;
-  }
-
-  &:hover .delete {
-    display: inline;
-    color: grey;
-    &:hover {
-      text-decoration: none;
-      color: red;
-    }
-  }
-}
-
 </style>
