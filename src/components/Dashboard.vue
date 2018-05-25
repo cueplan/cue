@@ -459,7 +459,7 @@ export default {
       return window.blockstack.getFile(listPath, {decrypt: true})
       .then((currentList) => {
         lists.push({
-          contents: window.automerge.load(currentList),
+          contents: this.removeObjectIds(JSON.parse(JSON.stringify(window.automerge.load(currentList)))),
           encrypt: true,
           automerge: true,
           path: listPath
@@ -467,6 +467,19 @@ export default {
         lists.currentList++
         return this.backupOneList(lists)
       })
+    },
+
+    removeObjectIds (obj) {
+      console.log(obj)
+      for (var p in obj) {
+        if (p.startsWith('_objectId')) {
+          delete obj[p]
+        } else if (obj.hasOwnProperty(p) && typeof obj[p] === 'object') {
+          this.removeObjectIds(obj[p])
+        }
+      }
+
+      return obj
     },
 
     download (filename, text) {
