@@ -244,6 +244,7 @@ export default {
 
         this.newListName = this.currentList.name
 
+        console.log('/lists/' + this.currentList.id + '.json')
         return blockstack.getFile('/lists/' + this.currentList.id + '.json', decrypt)
       })
       .then((contents) => {
@@ -275,10 +276,13 @@ export default {
         const decrypt = true
 
         this.loadedList = window.automerge.init()
+        console.log('/lists/' + this.currentList.id + '.json')
         return window.blockstack.getFile('/lists/' + this.currentList.id + '.json', decrypt)
       })
       .then((contents) => {
+        console.log(window.automerge.load)
         this.loadedList = window.automerge.load(contents) || window.automerge.init()
+        console.log(this.loadedList)
       })
 
       this.focusedId = null
@@ -480,6 +484,48 @@ export default {
 
     restoreBackup (e) {
       console.log(e.target.files[0])
+      var file = e.target.files[0]
+
+      return this.readFile(file)
+      .then((contents) => {
+        var lists = JSON.parse(contents)
+        return Promise.all(lists.map((l) => {
+          var contents
+          if (l.automerge) {
+            contents = window.automerge.init()
+            contents = window.automerge.save(window.automerge.change(contents, 'restoring backup', c => {
+              for (var p in l.contents) {
+                if (!p.startsWith('_')) {
+                  c[p] = l.contents[p]
+                }
+              }
+            }))
+          } else {
+            contents = JSON.stringify(l.contents)
+          }
+          console.log(contents)
+          return window.blockstack.putFile(l.path, contents, {encrypt: l.encrypt})
+        }))
+      })
+      .then(() => {
+        // window.location.reload()
+      })
+    },
+
+    readFile (file) {
+      return new Promise((resolve, reject) => {
+        var reader = new FileReader()
+        reader.onload = () => {
+          resolve(reader.result)
+        }
+        reader.onabort = () => {
+          reject(reader.result)
+        }
+        reader.onerror = () => {
+          reject(reader.result)
+        }
+        reader.readAsText(file)
+      })
     }
   }
 }
