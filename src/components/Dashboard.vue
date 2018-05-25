@@ -323,7 +323,7 @@ export default {
       this.loadedList = window.automerge.change(this.loadedList, 'New empty list', ll => {
         ll.name = today.toLocaleDateString()
         ll.id = listId
-        ll.todos = [ { id: 0, text: '', state: 'incomplete' } ]
+        ll.todos = [ { id: 0, text: '', status: 'incomplete' } ]
       })
 
       this.listIndex = this.currentCollection.length - 1
@@ -351,7 +351,7 @@ export default {
       this.loadedList = window.automerge.change(this.loadedList, 'Delete a todo', ll => {
         ll.todos.splice(todoId, 1)
         if (ll.todos.length === 0) {
-          ll.todos.splice(0, 0, { id: 0, text: '', state: 'incomplete' })
+          ll.todos.splice(0, 0, { id: 0, text: '', status: 'incomplete' })
         }
       })
       this.pushData()
@@ -373,7 +373,7 @@ export default {
 
     insertTodoAfter (todoId, value) {
       this.loadedList = window.automerge.change(this.loadedList, 'Insert todo', ll => {
-        ll.todos.splice(todoId + 1, 0, { id: ll.todos.length + 1, text: value || '', state: 'incomplete' })
+        ll.todos.splice(todoId + 1, 0, { id: ll.todos.length + 1, text: value || '', status: 'incomplete' })
       })
 
       this.pendingFocusId = todoId + 1
