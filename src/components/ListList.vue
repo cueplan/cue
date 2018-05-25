@@ -6,9 +6,7 @@
       <a @click.prevent="switchToList(index)" href="#">{{ list }}</a>
     </li>
     <li slot="footer" class="list-group-item">
-      <label>
-        <a @click.prevent="newList" href="#">+ New List</a>
-      </label>
+      <a @click.prevent="newList" href="#">+ New List</a>
     </li>
   </draggable>
 </template>
