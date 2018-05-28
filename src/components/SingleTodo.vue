@@ -132,7 +132,7 @@ label {
 }
 
 .todo-row:hover input[type="checkbox"] ~ .checkmark {
-  border-color: $brand-primary;
+  border-color: $primary;
 }
 
 .todo-row input[type="checkbox"]:checked ~ .checkmark {
@@ -157,7 +157,7 @@ label {
   top: 3px;
   width: 6px;
   height: 10px;
-  border: solid $brand-primary;
+  border: solid $primary;
   border-width: 0 3px 3px 0;
   -webkit-transform: rotate(45deg);
   -ms-transform: rotate(45deg);

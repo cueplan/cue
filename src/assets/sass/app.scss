@@ -6,7 +6,7 @@
 @import "node_modules/bootstrap/scss/bootstrap";
 @import 'node_modules/bootstrap-vue/dist/bootstrap-vue';
 
-.nav {
+.sidebar {
   flex-direction: column;
 }
 
@@ -41,6 +41,17 @@
   float: right;
 }
 
+.list-toggle {
+  font-family: "FontAwesome";
+  font-size: 16pt;
+  padding: 0px 7px;
+  color: gray;
+  background-color: white;
+  border-width: 0px;
+  border-radius: 0px;
+  margin: 5px;
+}
+
 .dropdown-item {
   display: block;
   padding: 3px 20px;
@@ -49,14 +60,6 @@
   line-height: 1.6;
   color: #333333;
   white-space: nowrap;
-}
-
-.list-toggle {
-  font-family: "FontAwesome";
-  font-size: 20pt;
-  padding: 0px 6px;
-  color: gray;
-  background-color: white;
 }
 
 .page-header {
@@ -105,7 +108,7 @@
   border-color: transparent;
   width: 80%;
   resize: none;
-  outline-color: $brand-primary;
+  outline-color: $primary;
   font-weight: 400;
 }
 
@@ -114,14 +117,14 @@
 }
 
 a {
-  color: $brand-primary
+  color: $primary
 }
 
-.nav a {
+.sidebar a {
   font-weight: bold;
 }
 
-.nav .list-group-item {
+.sidebar .list-group-item {
   padding: 6px 12px;
 }
 

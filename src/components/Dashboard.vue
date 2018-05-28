@@ -1,65 +1,66 @@
 <template>
-  <div class="hello">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-auto">
-          <div class="nav">
-            <div class="logo">
-              <img src="../assets/images/logo.png" height="48" width="144"/>
-              <b-dropdown boundary="viewport" no-caret right class="user-dropdown dropleft" toggleClass="user-toggle">
-                <template slot="button-content">
-                  <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar"/>
-                </template>
-                <b-dropdown-item @click.prevent="signOut">Sign Out</b-dropdown-item>
-                <b-dropdown-item @click.prevent="backupData">Backup Data</b-dropdown-item>
-                <b-dropdown-item @click.prevent="$refs.restoreinput.click()">Restore From Backup ...</b-dropdown-item>
-                <input type="file" ref="restoreinput" id="restoreinput" accept=".json" v-on:change="restoreBackup"/>
-              </b-dropdown>
-            </div>
-            <div class="listlist">
-              <!-- <a @click.prevent="switchToCollection('active')" href="#">Current</a>
-              <a @click.prevent="switchToCollection('archive')" href="#">Archive</a> -->
-              <listlist
-                :lists="listmeta"
-                :collection="collection"
-                v-on:switchList="switchToList"
-                v-on:newList="newList"
-                v-on:reorderList="reorderList"
-              />
-            </div>
+  <b-container fluid>
+    <b-row>
+      <b-col sm="auto">
+        <div class="sidebar">
+          <div class="logo">
+            <img src="../assets/images/logo.png" height="48" width="144"/>
+            <b-dropdown boundary="viewport" no-caret right class="user-dropdown" toggleClass="user-toggle">
+              <template slot="button-content">
+                <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar"/>
+              </template>
+              <b-dropdown-item @click.prevent="signOut">Sign Out</b-dropdown-item>
+              <b-dropdown-item @click.prevent="backupData">Backup Data</b-dropdown-item>
+              <b-dropdown-item @click.prevent="$refs.restoreinput.click()">Restore From Backup ...</b-dropdown-item>
+              <input type="file" ref="restoreinput" id="restoreinput" accept=".json" v-on:change="restoreBackup"/>
+            </b-dropdown>
+          </div>
+          <div class="listlist">
+            <!-- <a @click.prevent="switchToCollection('active')" href="#">Current</a>
+            <a @click.prevent="switchToCollection('archive')" href="#">Archive</a> -->
+            <listlist
+              :lists="listmeta"
+              :collection="collection"
+              v-on:switchList="switchToList"
+              v-on:newList="newList"
+              v-on:reorderList="reorderList"
+            />
           </div>
         </div>
-        <div class="col-sm">
-          <h1 class="page-header">
-            <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
-            <b-dropdown boundary="viewport" right text="" no-caret class="list-dropdown" toggleClass="list-toggle">
-              <b-dropdown-item class="dropdown-item" @click="deleteList">Delete List</b-dropdown-item>
-            </b-dropdown>
-            <small><span class="saving-status">{{ saving }}</span></small>
-          </h1>
+      </b-col>
+      <b-col sm>
+        <h1 class="page-header">
+          <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
+          <b-dropdown boundary="viewport" right no-caret class="list-dropdown" toggleClass="list-toggle">
+            <template slot="button-content">
+              
+            </template>
+            <b-dropdown-item class="dropdown-item" @click="deleteList">Delete List</b-dropdown-item>
+          </b-dropdown>
+          <small><span class="saving-status">{{ saving }}</span></small>
+        </h1>
 
-          <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
-            <singletodo
-              v-for="(todo, todoId) in todoOrder"
-              :todo="todo"
-              :todoId="todoId"
-              :key="todoId"
-              :focus="focusedId === todoId"
-              v-on:deleteTodo="deleteTodo"
-              v-on:completeTodo="completeTodo"
-              v-on:changeTodoText="changeTodoText"
-              v-on:insertAfter="insertTodoAfter"
-              v-on:todoBlurred="todoBlurred"
-              v-on:todoFocused="todoFocused"
-              v-on:focusPrev="focusPrevTodo"
-              v-on:focusNext="focusNextTodo"
-            />
-          </draggable>
+        <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
+          <singletodo
+            v-for="(todo, todoId) in todoOrder"
+            :todo="todo"
+            :todoId="todoId"
+            :key="todoId"
+            :focus="focusedId === todoId"
+            v-on:deleteTodo="deleteTodo"
+            v-on:completeTodo="completeTodo"
+            v-on:changeTodoText="changeTodoText"
+            v-on:insertAfter="insertTodoAfter"
+            v-on:todoBlurred="todoBlurred"
+            v-on:todoFocused="todoFocused"
+            v-on:focusPrev="focusPrevTodo"
+            v-on:focusNext="focusNextTodo"
+          />
+        </draggable>
 
-        </div>
-      </div>
-    </div>
-  </div>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script>
@@ -546,14 +547,12 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
-
 input::placeholder {
   color: grey;
 }
 
 label {
   margin-bottom: 0;
-  // width: 100%;
   cursor: pointer;
   input[type="checkbox"] {
     margin-right: 5px;

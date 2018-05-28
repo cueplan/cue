@@ -1,32 +1,14 @@
 $gray-900: #212529 !default;
 
-$brand-primary: #2D842F;
-$brand-info: #8eb4cb;
-$brand-success: #2ab27b;
-$brand-warning: #cbb956;
-$brand-danger: #bf5329;
+$primary: #2D842F;
+$info: #8eb4cb;
+$success: #2ab27b;
+$warning: #cbb956;
+$danger: #bf5329;
 
-$body-bg: $brand-primary;
+$body-bg: $primary;
 
 // 9. Fonts
-$font-family-sans-serif: "Lato", "sans serif";
+$font-family-sans-serif: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 $font-size-base: 0.875rem;
 $line-height-base: 1.6;
-$text-color: $gray-900;
-
-// 10. Components
-$border-radius-base: 0px !default;
-
-// 12. Buttons
-$btn-default-color: $text-color;
-
-// 13. Forms
-$input-border: lighten($text-color, 40%);
-$input-border-focus: lighten($brand-primary, 25%);
-$input-color-placeholder: lighten($text-color, 30%);
-
-// 16. Navbar
-$navbar-default-bg: #fff;
-
-// 37. Misc
-$panel-default-heading-bg: #fff;
