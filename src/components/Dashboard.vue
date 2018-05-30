@@ -42,32 +42,33 @@
         </div>
       </b-col>
       <b-col sm>
-        <h1 class="page-header" v-if="currentList">
-          <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
-          <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
-            <b-dropdown-item class="dropdown-item" @click="archiveList">Archive List</b-dropdown-item>
-          </b-dropdown>
-          <small><span class="saving-status">{{ saving }}</span></small>
-        </h1>
+        <b-card v-if="currentList" class="page-header" no-body>
+          <div slot="header">
+            <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
+            <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
+              <b-dropdown-item class="dropdown-item" @click="archiveList">Archive List</b-dropdown-item>
+            </b-dropdown>
+            <small><span class="saving-status">{{ saving }}</span></small>
+          </div>
 
-        <draggable  element="ul" class="list-group" v-if="currentList" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
-          <singletodo
-            v-for="(todo, todoId) in todoOrder"
-            :todo="todo"
-            :todoId="todoId"
-            :key="todoId"
-            :focus="focusedId === todoId"
-            v-on:deleteTodo="deleteTodo"
-            v-on:completeTodo="completeTodo"
-            v-on:changeTodoText="changeTodoText"
-            v-on:insertAfter="insertTodoAfter"
-            v-on:todoBlurred="todoBlurred"
-            v-on:todoFocused="todoFocused"
-            v-on:focusPrev="focusPrevTodo"
-            v-on:focusNext="focusNextTodo"
-          />
-        </draggable>
-
+          <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
+            <singletodo
+              v-for="(todo, todoId) in todoOrder"
+              :todo="todo"
+              :todoId="todoId"
+              :key="todoId"
+              :focus="focusedId === todoId"
+              v-on:deleteTodo="deleteTodo"
+              v-on:completeTodo="completeTodo"
+              v-on:changeTodoText="changeTodoText"
+              v-on:insertAfter="insertTodoAfter"
+              v-on:todoBlurred="todoBlurred"
+              v-on:todoFocused="todoFocused"
+              v-on:focusPrev="focusPrevTodo"
+              v-on:focusNext="focusNextTodo"
+            />
+          </draggable>
+        </b-card>
       </b-col>
     </b-row>
   </b-container>

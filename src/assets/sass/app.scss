@@ -54,6 +54,7 @@ body, #app {
   border-width: 0px;
   border-radius: 0px;
   margin: 5px;
+  background-color: transparent;
 }
 
 .dropdown-item {
@@ -67,14 +68,11 @@ body, #app {
 }
 
 .page-header {
-  margin-top: 22px;
-  margin-bottom: 0px;
-  padding: 10px;
-  background-color: white;
+  margin-top: 18px;
 }
 
 .saving-status {
-  padding-top:15px;
+  padding-top:12px;
   padding-right:10px;
   font-size: 12px;
   float: right;
@@ -90,6 +88,8 @@ body, #app {
   box-sizing: border-box;
   border-color: transparent;
   outline-color: $primary;
+  background-color: transparent;
+  font-size: $h1-font-size;
 }
 
 .title-input:focus {
