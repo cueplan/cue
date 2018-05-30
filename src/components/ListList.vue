@@ -1,13 +1,13 @@
 <template>
-  <draggable  element="ul" class="list-group" v-model="listOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
-    <li v-for="(list, index) in listOrder"
-      class="list-group-item draggable"
+  <draggable element="b-list-group" v-model="listOrder" :options="{draggable:'.draggable'}" @end="onDragEnd" flush :component-data="{flush: ''}">
+    <b-list-group-item v-for="(list, index) in listOrder"
+      class="draggable"
       :key="index">
       <a @click.prevent="switchToList(index)" href="#">{{ list }}</a>
-    </li>
-    <li slot="footer" class="list-group-item">
+    </b-list-group-item>
+    <b-list-group-item slot="footer">
       <a @click.prevent="newList" href="#">+ New List</a>
-    </li>
+    </b-list-group-item>
   </draggable>
 </template>
 

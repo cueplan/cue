@@ -16,31 +16,41 @@
             </b-dropdown>
           </div>
           <div class="listlist">
-            <!-- <a @click.prevent="switchToCollection('active')" href="#">Current</a>
-            <a @click.prevent="switchToCollection('archive')" href="#">Archive</a> -->
-            <listlist
-              :lists="listmeta"
-              :collection="collection"
-              v-on:switchList="switchToList"
-              v-on:newList="newList"
-              v-on:reorderList="reorderList"
-            />
+            <b-card no-body>
+            <b-tabs card v-model="listsIndex">
+              <b-tab title="Current">
+                <listlist
+                  :lists="activelists"
+                  :collection="'active'"
+                  v-on:switchList="switchToList"
+                  v-on:newList="newList"
+                  v-on:reorderList="reorderList"
+                />
+              </b-tab>
+              <b-tab title="Archive">
+                <listlist
+                  :lists="archivelists"
+                  :collection="'archive'"
+                  v-on:switchList="switchToList"
+                  v-on:newList="newList"
+                  v-on:reorderList="reorderList"
+                />
+              </b-tab>
+            </b-tabs>
+            </b-card>
           </div>
         </div>
       </b-col>
       <b-col sm>
-        <h1 class="page-header">
+        <h1 class="page-header" v-if="currentList">
           <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
-          <b-dropdown boundary="viewport" right no-caret class="list-dropdown" toggleClass="list-toggle">
-            <template slot="button-content">
-              
-            </template>
-            <b-dropdown-item class="dropdown-item" @click="deleteList">Delete List</b-dropdown-item>
+          <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
+            <b-dropdown-item class="dropdown-item" @click="archiveList">Archive List</b-dropdown-item>
           </b-dropdown>
           <small><span class="saving-status">{{ saving }}</span></small>
         </h1>
 
-        <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
+        <draggable  element="ul" class="list-group" v-if="currentList" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
           <singletodo
             v-for="(todo, todoId) in todoOrder"
             :todo="todo"
@@ -97,9 +107,15 @@ export default {
   },
   computed: {
     currentList: function () {
+      if (typeof this.currentCollection === 'undefined') {
+        return
+      }
       return this.lists.lists[this.currentCollection[this.listIndex]]
     },
     currentCollection: function () {
+      if (typeof this.lists.collections === 'undefined') {
+        return
+      }
       return this.lists.collections[this.collection]
     },
     todoOrder: {
@@ -109,12 +125,34 @@ export default {
       set: function (value) {
       }
     },
-    listmeta: {
+    listsIndex: {
+      get: function () {
+        return this.collection === 'active' ? 0
+          : this.collection === 'archive' ? 1
+          : 2
+      },
+      set: function (value) {
+        if (value === 0) {
+          this.switchToCollection('active')
+        } else if (value === 1) {
+          this.switchToCollection('archive')
+        }
+      }
+    },
+    activelists: {
       get: function () {
         if (typeof this.lists.lists === 'undefined' || typeof this.lists.collections === 'undefined') {
           return []
         }
-        return this.currentCollection.map(l => this.lists.lists[l].name)
+        return this.lists.collections['active'].map(l => this.lists.lists[l].name)
+      }
+    },
+    archivelists: {
+      get: function () {
+        if (typeof this.lists.lists === 'undefined' || typeof this.lists.collections === 'undefined') {
+          return []
+        }
+        return this.lists.collections['archive'].map(l => this.lists.lists[l].name)
       }
     }
   },
@@ -261,7 +299,7 @@ export default {
       (this.throttledPushData.flush() || Promise.resolve())
       .then(() => {
         this.collection = collection
-        this.switchToList(0, true)
+        this.switchToList(this.currentCollection.length > 0 ? 0 : -1, true)
       })
     },
 
@@ -273,6 +311,9 @@ export default {
       (this.throttledPushData.flush() || Promise.resolve())
       .then(() => {
         this.listIndex = listIndex
+        if (this.listIndex === -1) {
+          return Promise.reject()
+        }
         this.newListName = this.currentList.name
         const decrypt = true
 
@@ -284,6 +325,9 @@ export default {
         console.log(window.automerge.load)
         this.loadedList = window.automerge.load(contents) || window.automerge.init()
         console.log(this.loadedList)
+      })
+      .catch((error) => {
+        console.log(error)
       })
 
       this.focusedId = null
@@ -302,14 +346,16 @@ export default {
       this.pushData()
     },
 
-    deleteList () {
-      this.currentCollection.splice(this.listIndex, 1)
+    archiveList () {
+      var archived = this.currentCollection.splice(this.listIndex, 1)
+      console.log(archived)
+      this.lists.collections['archive'].push(archived)
 
       if (this.listIndex >= this.currentCollection.length) {
         this.listIndex--
       }
 
-      this.switchToList(this.listIndex)
+      this.switchToList(this.listIndex, true)
 
       this.pushData()
     },

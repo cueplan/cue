@@ -6,6 +6,10 @@
 @import "node_modules/bootstrap/scss/bootstrap";
 @import 'node_modules/bootstrap-vue/dist/bootstrap-vue';
 
+body, #app {
+  background-color: $primary;
+}
+
 .sidebar {
   flex-direction: column;
 }
@@ -85,6 +89,7 @@
   width: 70%;
   box-sizing: border-box;
   border-color: transparent;
+  outline-color: $primary;
 }
 
 .title-input:focus {
@@ -96,6 +101,10 @@
   margin: 5px 3px 9px;
   padding-top: 5px;
   line-height: 1.2em;
+}
+
+.dropdown-item {
+  outline-color: $primary;
 }
 
 .todo-input {
@@ -130,4 +139,8 @@ a {
 
 #restoreinput {
   display: none;
+}
+
+.listlist .card-body {
+  padding: 0px;
 }
