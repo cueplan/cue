@@ -78,6 +78,7 @@
 import ListList from './ListList.vue'
 import SingleTodo from './SingleTodo.vue'
 import draggable from 'vuedraggable'
+import CueData from '../cuedata.js'
 
 var OLD_STORAGE_FILE = 'todolists.json'
 var listsFile = 'lists.json'
@@ -92,6 +93,7 @@ export default {
   props: ['user'],
   data () {
     return {
+      cuedata: new CueData(window.blockstack),
       lists: {},
       loadedList: {},
       listIndex: 0,
