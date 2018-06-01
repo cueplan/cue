@@ -6,6 +6,8 @@ export default class {
   constructor (blockstack, automerge) {
     this.blockstack = blockstack
     this.automerge = automerge
+    this.lists = {}
+    this.loadedList = {}
   }
 
   fetchData () {
@@ -88,7 +90,7 @@ export default class {
       this.saved = true
       this.saving = 'Saved'
       console.log('pushing list')
-      return this.blockstack.putFile('/lists/' + this.currentList.id + '.json', this.automerge.save(this.loadedList), encrypt)
+      return this.blockstack.putFile('/lists/' + this.lists.lists[this.listIndex].id + '.json', this.automerge.save(this.loadedList), encrypt)
     })
   }
 
@@ -121,8 +123,9 @@ export default class {
         this.lists.collections = { active: this.lists.lists.map((l, i) => i), archive: [] }
       }
 
-      console.log('/lists/' + this.currentList.id + '.json')
-      return this.blockstack.getFile('/lists/' + this.currentList.id + '.json', decrypt)
+      console.log(this.lists)
+      console.log('/lists/' + this.lists.lists[this.listIndex].id + '.json')
+      return this.blockstack.getFile('/lists/' + this.lists.lists[this.listIndex].id + '.json', decrypt)
     })
     .then((contents) => {
       this.loadedList = this.automerge.load(contents)

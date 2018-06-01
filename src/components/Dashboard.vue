@@ -93,7 +93,7 @@ export default {
   props: ['user'],
   data () {
     return {
-      cuedata: new CueData(window.blockstack),
+      cuedata: new CueData(window.blockstack, window.automerge),
       lists: {},
       loadedList: {},
       listIndex: 0,
@@ -164,6 +164,7 @@ export default {
   },
   mounted () {
     this.fetchData()
+    this.cuedata.fetchData()
   },
   methods: {
     fetchData () {
