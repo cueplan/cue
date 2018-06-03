@@ -267,7 +267,9 @@ export default class {
   }
 
   reorderList (oldIndex, newIndex, collection) {
-    this.lists.collections[collection].splice(newIndex, 0, this.currentCollection.splice(oldIndex, 1)[0])
+    console.log(collection)
+    console.log(this.lists.collections['active'])
+    this.lists.collections[collection].splice(newIndex, 0, this.lists.collections[collection].splice(oldIndex, 1)[0])
     this.pushData()
   }
 
@@ -278,7 +280,7 @@ export default class {
   }
 
   changeListName (listIndex, collection, newName) {
-    this.listMeta(listIndex, collection).id = newName
+    this.listMeta(listIndex, collection).name = newName
     this.loadedList = window.automerge.change(this.loadedList, 'Changing list name', ll => {
       ll.name = newName
     })

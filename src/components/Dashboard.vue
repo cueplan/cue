@@ -178,6 +178,9 @@ export default {
 
       this.listIndex = listIndex
       this.cuedata.switchLoadedList(listIndex, this.collection)
+      .then(() => {
+        this.newListName = this.cuedata.loadedList.name
+      })
       this.focusedId = null
     },
 
@@ -221,6 +224,7 @@ export default {
       }
 
       this.cuedata.changeListName(this.listIndex, this.collection, newName)
+      this.newListName = this.cuedata.loadedList.name
     },
 
     // Todo operations
