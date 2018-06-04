@@ -90,18 +90,13 @@ export default {
   data () {
     return {
       cuedata: new CueData(window.blockstack, window.automerge, window.lodash),
-      lists: {},
-      loadedList: {},
       collection: 'active',
       listIndex: 0,
-      dataVersion: 0,
       newListName: '',
       saved: true,
       saving: '',
       focusedId: null,
-      pendingFocusId: null,
-      restoreFile: null
-      // throttledPushData: window.lodash.debounce(this.pushDataNow, 3000, { maxWait: 60000 })
+      pendingFocusId: null
     }
   },
   computed: {
@@ -162,6 +157,7 @@ export default {
     this.cuedata.fetchData()
   },
   methods: {
+    // TODO: should not be something that hits cuedata, unless a list needs to be loaded into memory
     switchToCollection (collection) {
       if (this.collection === collection) {
         return
@@ -174,38 +170,20 @@ export default {
       })
     },
 
+    // TODO: should not be something that hits cuedata, unless a list needs to be loaded into memory
     switchToList (listIndex, force) {
       if (this.listIndex === listIndex && !force) {
         return
       }
 
-      (this.cuedata.throttledPushData.flush() || Promise.resolve())
-      .then(() => {
-        this.listIndex = listIndex
-        if (this.listIndex === -1) {
-          return Promise.reject()
-        }
-        this.newListName = this.currentList.name
-        const decrypt = true
-
-        this.loadedList = window.automerge.init()
-        console.log('/lists/' + this.currentList.id + '.json')
-        return window.blockstack.getFile('/lists/' + this.currentList.id + '.json', decrypt)
-      })
-      .then((contents) => {
-        console.log(window.automerge.load)
-        this.loadedList = window.automerge.load(contents) || window.automerge.init()
-        console.log(this.loadedList)
-      })
-      .catch((error) => {
-        console.log(error)
-      })
-
+      this.listIndex = listIndex
+      this.cuedata.switchLoadedList(listIndex, this.collection)
       this.focusedId = null
     },
 
+    // List operations
     reorderList (oldIndex, newIndex) {
-      this.currentCollection.splice(newIndex, 0, this.currentCollection.splice(oldIndex, 1)[0])
+      this.cuedata.reorderList(oldIndex, newIndex, this.collection)
       if (this.listIndex > oldIndex && this.listIndex <= newIndex) {
         this.listIndex--
       } else if (this.listIndex >= newIndex && this.listIndex < oldIndex) {
@@ -213,93 +191,67 @@ export default {
       } else if (this.listIndex === oldIndex) {
         this.listIndex = newIndex
       }
-
-      this.pushData()
     },
 
     archiveList () {
-      var archived = this.currentCollection.splice(this.listIndex, 1)
-      console.log(archived)
-      this.lists.collections['archive'].push(archived)
+      this.cuedata.archiveList(this.listIndex, this.collection)
 
       if (this.listIndex >= this.currentCollection.length) {
         this.listIndex--
       }
 
       this.switchToList(this.listIndex, true)
-
-      this.pushData()
     },
 
     newList () {
       const today = new Date()
-      const listId = Date.now()
       var listName = today.toLocaleDateString()
-      this.lists.lists.push({ name: listName, id: listId })
-      this.currentCollection.push(this.lists.lists.length - 1)
-      this.loadedList = window.automerge.init()
-      this.loadedList = window.automerge.change(this.loadedList, 'New empty list', ll => {
-        ll.name = today.toLocaleDateString()
-        ll.id = listId
-        ll.todos = [ { id: 0, text: '', status: 'incomplete' } ]
-      })
 
-      this.listIndex = this.currentCollection.length - 1
+      this.cuedata.newList(listName, this.collection)
+
       this.newListName = this.currentList.name
       this.focusedId = null
-      this.pushData()
     },
 
     changeListName () {
       var newName = this.newListName.trim()
-      if (!newName || this.lists.lists.find(l => l.name === newName)) {
+      if (!newName || this.cuedata.lists.lists.find(l => l.name === newName)) {
         this.newListName = this.currentList.name
         return
       }
 
-      this.currentList.name = this.newListName
-      this.loadedList = window.automerge.change(this.loadedList, 'Changing list name', ll => {
-        ll.name = this.newListName
-      })
-
-      this.pushData()
+      this.cuedata.changeListName(this.listIndex, this.collection, newName)
     },
 
+    // Todo operations
     deleteTodo (todoId) {
-      this.loadedList = window.automerge.change(this.loadedList, 'Delete a todo', ll => {
-        ll.todos.splice(todoId, 1)
-        if (ll.todos.length === 0) {
-          ll.todos.splice(0, 0, { id: 0, text: '', status: 'incomplete' })
-        }
-      })
-      this.pushData()
+      this.cuedata.deleteTodo(todoId)
     },
 
     completeTodo (todoId, value) {
-      this.loadedList = window.automerge.change(this.loadedList, 'Complete a todo', ll => {
-        ll.todos[todoId].status = value ? 'completed' : 'incomplete'
-      })
-      this.pushData()
+      this.cuedata.completeTodo(todoId, value)
     },
 
     changeTodoText (todoId, value) {
-      this.loadedList = window.automerge.change(this.loadedList, 'Change todo text', ll => {
-        ll.todos[todoId].text = value
-      })
-      this.pushData()
+      this.cuedata.changeTodoText(todoId, value)
     },
 
     insertTodoAfter (todoId, value) {
-      this.loadedList = window.automerge.change(this.loadedList, 'Insert todo', ll => {
-        ll.todos.splice(todoId + 1, 0, { id: ll.todos.length + 1, text: value || '', status: 'incomplete' })
-      })
+      this.cuedata.insertTodoAfter(todoId, value)
 
       this.pendingFocusId = todoId + 1
       this.focusedId = todoId + 1
-
-      this.pushData()
     },
 
+    reorderTodos (oldIndex, newIndex) {
+      this.cuedata.reorderTodos(oldIndex, newIndex)
+    },
+
+    onDragEnd (evt) {
+      this.reorderTodos(evt.oldIndex, evt.newIndex)
+    },
+
+    // UI
     todoBlurred (todoId) {
       this.focusedId = this.pendingFocusId
       this.pendingFocusId = null
@@ -317,14 +269,6 @@ export default {
       this.pendingFocusId = this.focusedId = Math.min(todoId + 1, this.loadedList.todos.length - 1)
     },
 
-    onDragEnd (evt) {
-      this.loadedList = window.automerge.change(this.loadedList, 'Moving a todo', ll => {
-        ll.todos.splice(evt.newIndex, 0, ll.todos.splice(evt.oldIndex, 1)[0])
-      })
-
-      this.pushData()
-    },
-
     beforeUnload (e) {
       if (!this.saved) {
         e.returnValue = "Latest changes haven't been saved. Are you sure?"
@@ -340,6 +284,7 @@ export default {
       this.changeListName()
     },
 
+    // account operations
     signOut () {
       window.blockstack.signUserOut(window.location.href)
     },

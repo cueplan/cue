@@ -30,7 +30,10 @@ export default class {
   }
 
   initializeData () {
-    this.lists = { lists: [] }
+    this.lists = {
+      lists: [],
+      collections: { active: [], archive: [] }
+    }
     this.newList()
     this.throttledPushData()
     return this.throttledPushData.flush()
@@ -60,7 +63,6 @@ export default class {
 
     const listId = Date.now()
     this.lists.lists.push({ name: lists.lists[0].name, id: listId })
-    this.listIndex = this.lists.lists.length - 1
     this.loadedList = this.automerge.init()
     this.loadedList = this.automerge.change(this.loadedList, 'Upgrade v1 list', ll => {
       ll.name = lists.lists[0].name
@@ -91,7 +93,7 @@ export default class {
       this.saved = true
       this.saving = 'Saved'
       console.log('pushing list')
-      return this.blockstack.putFile('/lists/' + this.lists.lists[this.listIndex].id + '.json', this.automerge.save(this.loadedList), encrypt)
+      return this.blockstack.putFile('/lists/' + this.loadedList.id + '.json', this.automerge.save(this.loadedList), encrypt)
     })
   }
 
@@ -117,7 +119,6 @@ export default class {
     .then((listsText) => {
       console.log(listsText)
       var lists = JSON.parse(listsText || {})
-      this.listIndex = 0
       this.lists = lists
 
       if (typeof this.lists.collections === 'undefined') {
@@ -125,8 +126,8 @@ export default class {
       }
 
       console.log(this.lists)
-      console.log('/lists/' + this.lists.lists[this.listIndex].id + '.json')
-      return this.blockstack.getFile('/lists/' + this.lists.lists[this.listIndex].id + '.json', decrypt)
+      console.log('/lists/' + this.listMeta(0, 'active').id + '.json')
+      return this.blockstack.getFile('/lists/' + this.listMeta(0, 'active').id + '.json', decrypt)
     })
     .then((contents) => {
       this.loadedList = this.automerge.load(contents)
@@ -224,5 +225,104 @@ export default class {
       }
       reader.readAsText(file)
     })
+  }
+
+  switchLoadedList (listIndex, collection) {
+    return (this.throttledPushData.flush() || Promise.resolve())
+    .then(() => {
+      if (listIndex === -1) {
+        return Promise.reject()
+      }
+      const decrypt = true
+
+      this.loadedList = this.automerge.init()
+      return this.blockstack.getFile('/lists/' + this.listMeta(listIndex, collection).id + '.json', decrypt)
+    })
+    .then((contents) => {
+      this.loadedList = this.automerge.load(contents) || this.automerge.init()
+      console.log(this.loadedList)
+    })
+    .catch((error) => {
+      console.log(error)
+    })
+  }
+
+  listMeta (listIndex, collection) {
+    return this.lists.lists[this.lists.collections[collection][listIndex]]
+  }
+
+  newList (listName, collection) {
+    const listId = Date.now()
+
+    this.lists.lists.push({ name: listName, id: listId })
+    this.lists.collections[collection].push(this.lists.lists.length - 1)
+    this.loadedList = this.automerge.init()
+    this.loadedList = this.automerge.change(this.loadedList, 'New empty list', ll => {
+      ll.name = listName
+      ll.id = listId
+      ll.todos = [ { id: 0, text: '', status: 'incomplete' } ]
+    })
+
+    this.pushData()
+  }
+
+  reorderList (oldIndex, newIndex, collection) {
+    this.lists.collections[collection].splice(newIndex, 0, this.currentCollection.splice(oldIndex, 1)[0])
+    this.pushData()
+  }
+
+  archiveList (listIndex, collection) {
+    var archived = this.lists.collections[collection].splice(listIndex, 1)
+    this.lists.collections['archive'].push(archived)
+    this.pushData()
+  }
+
+  changeListName (listIndex, collection, newName) {
+    this.listMeta(listIndex, collection).id = newName
+    this.loadedList = window.automerge.change(this.loadedList, 'Changing list name', ll => {
+      ll.name = newName
+    })
+    this.pushData()
+  }
+
+  // Todo Operations
+  deleteTodo (todoId) {
+    this.loadedList = window.automerge.change(this.loadedList, 'Delete a todo', ll => {
+      ll.todos.splice(todoId, 1)
+      if (ll.todos.length === 0) {
+        ll.todos.splice(0, 0, { id: 0, text: '', status: 'incomplete' })
+      }
+    })
+    this.pushData()
+  }
+
+  completeTodo (todoId, value) {
+    this.loadedList = window.automerge.change(this.loadedList, 'Complete a todo', ll => {
+      ll.todos[todoId].status = value ? 'completed' : 'incomplete'
+    })
+    this.pushData()
+  }
+
+  changeTodoText (todoId, value) {
+    this.loadedList = window.automerge.change(this.loadedList, 'Change todo text', ll => {
+      ll.todos[todoId].text = value
+    })
+    this.pushData()
+  }
+
+  insertTodoAfter (todoId, value) {
+    this.loadedList = window.automerge.change(this.loadedList, 'Insert todo', ll => {
+      ll.todos.splice(todoId + 1, 0, { id: ll.todos.length + 1, text: value || '', status: 'incomplete' })
+    })
+
+    this.pushData()
+  }
+
+  reorderTodos (oldIndex, newIndex) {
+    this.loadedList = window.automerge.change(this.loadedList, 'Moving a todo', ll => {
+      ll.todos.splice(newIndex, 0, ll.todos.splice(oldIndex, 1)[0])
+    })
+
+    this.pushData()
   }
 }
