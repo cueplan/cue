@@ -48,7 +48,7 @@
             <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
               <b-dropdown-item class="dropdown-item" @click="archiveList">Archive List</b-dropdown-item>
             </b-dropdown>
-            <small><span class="saving-status">{{ saving }}</span></small>
+            <small><span class="saving-status">{{ cuedata.saving }}</span></small>
           </div>
 
           <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
@@ -93,8 +93,6 @@ export default {
       collection: 'active',
       listIndex: 0,
       newListName: '',
-      saved: true,
-      saving: '',
       focusedId: null,
       pendingFocusId: null
     }
@@ -155,6 +153,10 @@ export default {
   },
   mounted () {
     this.cuedata.fetchData()
+    .then(() => {
+      console.log('setting new list name')
+      this.newListName = this.cuedata.loadedList.name
+    })
   },
   methods: {
     // TODO: should not be something that hits cuedata, unless a list needs to be loaded into memory
@@ -212,6 +214,7 @@ export default {
 
       this.cuedata.newList(listName, this.collection)
 
+      this.listIndex = this.currentCollection.length - 1
       this.newListName = this.currentList.name
       this.focusedId = null
     },
@@ -274,7 +277,7 @@ export default {
     },
 
     beforeUnload (e) {
-      if (!this.saved) {
+      if (!this.cuedata.saved) {
         e.returnValue = "Latest changes haven't been saved. Are you sure?"
       }
     },

@@ -1,4 +1,4 @@
-var OLD_STORAGE_FILE = 'todolists.json'
+var oldStorageFile = 'todolists.json'
 var listsFile = 'lists.json'
 var dataVersionFile = 'version.json'
 
@@ -9,23 +9,24 @@ export default class {
     this.lists = {}
     this.loadedList = {}
     this.throttledPushData = lodash.debounce(this.pushDataNow, 3000, { maxWait: 60000 })
+    this.saving = 'Saved'
   }
 
   fetchData () {
-    this.blockstack.getFile(dataVersionFile, {decrypt: false})
+    return this.blockstack.getFile(dataVersionFile, {decrypt: false})
     .then((contents) => {
       if (contents) {
         this.dataVersion = JSON.parse(contents || 0)
-        console.log(this.dataVersion)
         if (this.dataVersion < 2) {
           return this.upgradeData()
         }
+        return Promise.resolve()
       } else {
         return this.initializeData()
       }
     })
     .then(() => {
-      this.fetchVersion2Data()
+      return this.fetchVersion2Data()
     })
   }
 
@@ -48,7 +49,6 @@ export default class {
       return this.fetchVersion1Data()
         .then(this.upgradeOnev1List, this.initializeData)
         .then(() => {
-          console.log('setting version to 2')
           this.dataVersion = 2
           return this.blockstack.putFile(dataVersionFile, JSON.stringify(this.dataVersion), {encrypt: false})
         })
@@ -57,7 +57,6 @@ export default class {
 
   upgradeOnev1List (lists) {
     if (lists.lists.length === 0) {
-      console.log('done upgrading')
       return Promise.resolve()
     }
 
@@ -78,28 +77,9 @@ export default class {
     })
   }
 
-  pushData () {
-    this.saved = false
-    this.saving = 'Saving...'
-    this.throttledPushData()
-  }
-
-  pushDataNow () {
-    const encrypt = true
-
-    console.log('pushing data: ' + JSON.stringify(this.lists))
-    return this.blockstack.putFile(listsFile, JSON.stringify(this.lists), encrypt)
-    .then(() => {
-      this.saved = true
-      this.saving = 'Saved'
-      console.log('pushing list')
-      return this.blockstack.putFile('/lists/' + this.loadedList.id + '.json', this.automerge.save(this.loadedList), encrypt)
-    })
-  }
-
   fetchVersion1Data () {
     const decrypt = true
-    return this.blockstack.getFile(OLD_STORAGE_FILE, decrypt)
+    return this.blockstack.getFile(oldStorageFile, decrypt)
     .then((todosText) => {
       console.log(todosText)
       var lists = this.automerge.load(todosText) || this.automerge.init()
@@ -115,9 +95,8 @@ export default class {
 
   fetchVersion2Data () {
     const decrypt = true
-    this.blockstack.getFile(listsFile, decrypt)
+    return this.blockstack.getFile(listsFile, decrypt)
     .then((listsText) => {
-      console.log(listsText)
       var lists = JSON.parse(listsText || {})
       this.lists = lists
 
@@ -125,12 +104,28 @@ export default class {
         this.lists.collections = { active: this.lists.lists.map((l, i) => i), archive: [] }
       }
 
-      console.log(this.lists)
-      console.log('/lists/' + this.listMeta(0, 'active').id + '.json')
       return this.blockstack.getFile('/lists/' + this.listMeta(0, 'active').id + '.json', decrypt)
     })
     .then((contents) => {
       this.loadedList = this.automerge.load(contents)
+      return Promise.resolve()
+    })
+  }
+
+  pushData () {
+    this.saved = false
+    this.saving = 'Saving...'
+    this.throttledPushData()
+  }
+
+  pushDataNow () {
+    const encrypt = true
+
+    return this.blockstack.putFile(listsFile, JSON.stringify(this.lists), encrypt)
+    .then(() => {
+      this.saved = true
+      this.saving = 'Saved'
+      return this.blockstack.putFile('/lists/' + this.loadedList.id + '.json', this.automerge.save(this.loadedList), encrypt)
     })
   }
 
@@ -267,8 +262,6 @@ export default class {
   }
 
   reorderList (oldIndex, newIndex, collection) {
-    console.log(collection)
-    console.log(this.lists.collections['active'])
     this.lists.collections[collection].splice(newIndex, 0, this.lists.collections[collection].splice(oldIndex, 1)[0])
     this.pushData()
   }
