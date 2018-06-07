@@ -42,33 +42,7 @@
         </div>
       </b-col>
       <b-col sm>
-        <b-card v-if="currentList" class="page-header" no-body>
-          <div slot="header">
-            <input id="listNameInput" v-model="newListName" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
-            <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
-              <b-dropdown-item class="dropdown-item" @click="archiveList">Archive List</b-dropdown-item>
-            </b-dropdown>
-            <small><span class="saving-status">{{ cuedata.saving }}</span></small>
-          </div>
-
-          <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
-            <singletodo
-              v-for="(todo, todoId) in todoOrder"
-              :todo="todo"
-              :todoId="todoId"
-              :key="todoId"
-              :focus="focusedId === todoId"
-              v-on:deleteTodo="deleteTodo"
-              v-on:completeTodo="completeTodo"
-              v-on:changeTodoText="changeTodoText"
-              v-on:insertAfter="insertTodoAfter"
-              v-on:todoBlurred="todoBlurred"
-              v-on:todoFocused="todoFocused"
-              v-on:focusPrev="focusPrevTodo"
-              v-on:focusNext="focusNextTodo"
-            />
-          </draggable>
-        </b-card>
+        <cuelist :cuedata="cuedata" v-on:archiveList="archiveList" v-on:changeListName="changeListName"/>
       </b-col>
     </b-row>
   </b-container>
@@ -76,7 +50,7 @@
 
 <script>
 import ListList from './ListList.vue'
-import SingleTodo from './SingleTodo.vue'
+import CueList from './CueList.vue'
 import draggable from 'vuedraggable'
 import CueData from '../cuedata.js'
 
@@ -85,37 +59,21 @@ export default {
   components: {
     listlist: ListList,
     draggable,
-    singletodo: SingleTodo },
+    cuelist: CueList },
   props: ['user'],
   data () {
     return {
       cuedata: new CueData(window.blockstack, window.automerge, window.lodash),
       collection: 'active',
-      listIndex: 0,
-      newListName: '',
-      focusedId: null,
-      pendingFocusId: null
+      listIndex: 0
     }
   },
   computed: {
-    currentList: function () {
-      if (typeof this.currentCollection === 'undefined') {
-        return
-      }
-      return this.cuedata.lists.lists[this.currentCollection[this.listIndex]]
-    },
     currentCollection: function () {
       if (typeof this.cuedata.lists.collections === 'undefined') {
         return
       }
       return this.cuedata.lists.collections[this.collection]
-    },
-    todoOrder: {
-      get: function () {
-        return this.cuedata.loadedList.todos || []
-      },
-      set: function (value) {
-      }
     },
     listsIndex: {
       get: function () {
@@ -153,10 +111,6 @@ export default {
   },
   mounted () {
     this.cuedata.fetchData()
-    .then(() => {
-      console.log('setting new list name')
-      this.newListName = this.cuedata.loadedList.name
-    })
   },
   methods: {
     // TODO: should not be something that hits cuedata, unless a list needs to be loaded into memory
@@ -180,10 +134,6 @@ export default {
 
       this.listIndex = listIndex
       this.cuedata.switchLoadedList(listIndex, this.collection)
-      .then(() => {
-        this.newListName = this.cuedata.loadedList.name
-      })
-      this.focusedId = null
     },
 
     // List operations
@@ -215,80 +165,20 @@ export default {
       this.cuedata.newList(listName, this.collection)
 
       this.listIndex = this.currentCollection.length - 1
-      this.newListName = this.currentList.name
-      this.focusedId = null
     },
 
-    changeListName () {
-      var newName = this.newListName.trim()
+    changeListName (newName) {
       if (!newName || this.cuedata.lists.lists.find(l => l.name === newName)) {
-        this.newListName = this.currentList.name
         return
       }
 
       this.cuedata.changeListName(this.listIndex, this.collection, newName)
-      this.newListName = this.cuedata.loadedList.name
-    },
-
-    // Todo operations
-    deleteTodo (todoId) {
-      this.cuedata.deleteTodo(todoId)
-    },
-
-    completeTodo (todoId, value) {
-      this.cuedata.completeTodo(todoId, value)
-    },
-
-    changeTodoText (todoId, value) {
-      this.cuedata.changeTodoText(todoId, value)
-    },
-
-    insertTodoAfter (todoId, value) {
-      this.cuedata.insertTodoAfter(todoId, value)
-
-      this.pendingFocusId = todoId + 1
-      this.focusedId = todoId + 1
-    },
-
-    reorderTodos (oldIndex, newIndex) {
-      this.cuedata.reorderTodos(oldIndex, newIndex)
-    },
-
-    onDragEnd (evt) {
-      this.reorderTodos(evt.oldIndex, evt.newIndex)
-    },
-
-    // UI
-    todoBlurred (todoId) {
-      this.focusedId = this.pendingFocusId
-      this.pendingFocusId = null
-    },
-
-    todoFocused (todoId) {
-      this.focusedId = todoId
-    },
-
-    focusPrevTodo (todoId) {
-      this.pendingFocusId = this.focusedId = Math.max(todoId - 1, 0)
-    },
-
-    focusNextTodo (todoId) {
-      this.pendingFocusId = this.focusedId = Math.min(todoId + 1, this.loadedList.todos.length - 1)
     },
 
     beforeUnload (e) {
       if (!this.cuedata.saved) {
         e.returnValue = "Latest changes haven't been saved. Are you sure?"
       }
-    },
-
-    editListNameKeyUp (e) {
-      this.editListNameBlur(e)
-      document.getElementById('listNameInput').blur()
-    },
-
-    editListNameBlur (e) {
-      this.changeListName()
     },
 
     // account operations

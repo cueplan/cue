@@ -81,7 +81,6 @@ export default class {
     const decrypt = true
     return this.blockstack.getFile(oldStorageFile, decrypt)
     .then((todosText) => {
-      console.log(todosText)
       var lists = this.automerge.load(todosText) || this.automerge.init()
       if (typeof lists.lists === 'undefined') {
         return Promise.reject()
@@ -235,7 +234,6 @@ export default class {
     })
     .then((contents) => {
       this.loadedList = this.automerge.load(contents) || this.automerge.init()
-      console.log(this.loadedList)
     })
     .catch((error) => {
       console.log(error)
