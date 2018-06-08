@@ -63,7 +63,7 @@ export default {
   props: ['user'],
   data () {
     return {
-      cuedata: new CueData(window.blockstack, window.automerge, window.lodash),
+      cuedata: new CueData(window.blockstack),
       collection: 'active',
       listIndex: 0
     }

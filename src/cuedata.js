@@ -1,11 +1,13 @@
+import automerge from 'automerge'
+import lodash from 'lodash'
+
 var oldStorageFile = 'todolists.json'
 var listsFile = 'lists.json'
 var dataVersionFile = 'version.json'
 
 export default class {
-  constructor (blockstack, automerge, lodash) {
+  constructor (blockstack) {
     this.blockstack = blockstack
-    this.automerge = automerge
     this.lists = {}
     this.loadedList = {}
     this.throttledPushData = lodash.debounce(this.pushDataNow, 3000, { maxWait: 60000 })
@@ -62,8 +64,8 @@ export default class {
 
     const listId = Date.now()
     this.lists.lists.push({ name: lists.lists[0].name, id: listId })
-    this.loadedList = this.automerge.init()
-    this.loadedList = this.automerge.change(this.loadedList, 'Upgrade v1 list', ll => {
+    this.loadedList = automerge.init()
+    this.loadedList = automerge.change(this.loadedList, 'Upgrade v1 list', ll => {
       ll.name = lists.lists[0].name
       ll.id = listId
       ll.todos = lists.lists[0].todos.map((t, i) => { return { id: i, text: t.text, status: t.completed ? 'completed' : 'incomplete' } })
@@ -72,7 +74,7 @@ export default class {
     this.throttledPushData()
     return this.throttledPushData.flush()
     .then(() => {
-      lists = this.automerge.change(lists, 'upgrading', l => l.lists.splice(0, 1))
+      lists = automerge.change(lists, 'upgrading', l => l.lists.splice(0, 1))
       return this.upgradeOnev1List(lists)
     })
   }
@@ -81,7 +83,7 @@ export default class {
     const decrypt = true
     return this.blockstack.getFile(oldStorageFile, decrypt)
     .then((todosText) => {
-      var lists = this.automerge.load(todosText) || this.automerge.init()
+      var lists = automerge.load(todosText) || automerge.init()
       if (typeof lists.lists === 'undefined') {
         return Promise.reject()
       }
@@ -106,7 +108,7 @@ export default class {
       return this.blockstack.getFile('/lists/' + this.listMeta(0, 'active').id + '.json', decrypt)
     })
     .then((contents) => {
-      this.loadedList = this.automerge.load(contents)
+      this.loadedList = automerge.load(contents)
       return Promise.resolve()
     })
   }
@@ -124,7 +126,7 @@ export default class {
     .then(() => {
       this.saved = true
       this.saving = 'Saved'
-      return this.blockstack.putFile('/lists/' + this.loadedList.id + '.json', this.automerge.save(this.loadedList), encrypt)
+      return this.blockstack.putFile('/lists/' + this.loadedList.id + '.json', automerge.save(this.loadedList), encrypt)
     })
   }
 
@@ -158,7 +160,7 @@ export default class {
     return window.blockstack.getFile(listPath, {decrypt: true})
     .then((currentList) => {
       lists.push({
-        contents: this.removeObjectIds(JSON.parse(JSON.stringify(window.automerge.load(currentList)))),
+        contents: this.removeObjectIds(JSON.parse(JSON.stringify(automerge.load(currentList)))),
         encrypt: true,
         automerge: true,
         path: listPath
@@ -188,8 +190,8 @@ export default class {
       return Promise.all(lists.map((l) => {
         var contents
         if (l.automerge) {
-          contents = window.automerge.init()
-          contents = window.automerge.save(window.automerge.change(contents, 'restoring backup', c => {
+          contents = automerge.init()
+          contents = automerge.save(automerge.change(contents, 'restoring backup', c => {
             for (var p in l.contents) {
               if (!p.startsWith('_')) {
                 c[p] = l.contents[p]
@@ -229,11 +231,11 @@ export default class {
       }
       const decrypt = true
 
-      this.loadedList = this.automerge.init()
+      this.loadedList = automerge.init()
       return this.blockstack.getFile('/lists/' + this.listMeta(listIndex, collection).id + '.json', decrypt)
     })
     .then((contents) => {
-      this.loadedList = this.automerge.load(contents) || this.automerge.init()
+      this.loadedList = automerge.load(contents) || automerge.init()
     })
     .catch((error) => {
       console.log(error)
@@ -249,8 +251,8 @@ export default class {
 
     this.lists.lists.push({ name: listName, id: listId })
     this.lists.collections[collection].push(this.lists.lists.length - 1)
-    this.loadedList = this.automerge.init()
-    this.loadedList = this.automerge.change(this.loadedList, 'New empty list', ll => {
+    this.loadedList = automerge.init()
+    this.loadedList = automerge.change(this.loadedList, 'New empty list', ll => {
       ll.name = listName
       ll.id = listId
       ll.todos = [ { id: 0, text: '', status: 'incomplete' } ]
@@ -272,7 +274,7 @@ export default class {
 
   changeListName (listIndex, collection, newName) {
     this.listMeta(listIndex, collection).name = newName
-    this.loadedList = window.automerge.change(this.loadedList, 'Changing list name', ll => {
+    this.loadedList = automerge.change(this.loadedList, 'Changing list name', ll => {
       ll.name = newName
     })
     this.pushData()
@@ -280,7 +282,7 @@ export default class {
 
   // Todo Operations
   deleteTodo (todoId) {
-    this.loadedList = window.automerge.change(this.loadedList, 'Delete a todo', ll => {
+    this.loadedList = automerge.change(this.loadedList, 'Delete a todo', ll => {
       ll.todos.splice(todoId, 1)
       if (ll.todos.length === 0) {
         ll.todos.splice(0, 0, { id: 0, text: '', status: 'incomplete' })
@@ -290,21 +292,21 @@ export default class {
   }
 
   completeTodo (todoId, value) {
-    this.loadedList = window.automerge.change(this.loadedList, 'Complete a todo', ll => {
+    this.loadedList = automerge.change(this.loadedList, 'Complete a todo', ll => {
       ll.todos[todoId].status = value ? 'completed' : 'incomplete'
     })
     this.pushData()
   }
 
   changeTodoText (todoId, value) {
-    this.loadedList = window.automerge.change(this.loadedList, 'Change todo text', ll => {
+    this.loadedList = automerge.change(this.loadedList, 'Change todo text', ll => {
       ll.todos[todoId].text = value
     })
     this.pushData()
   }
 
   insertTodoAfter (todoId, value) {
-    this.loadedList = window.automerge.change(this.loadedList, 'Insert todo', ll => {
+    this.loadedList = automerge.change(this.loadedList, 'Insert todo', ll => {
       ll.todos.splice(todoId + 1, 0, { id: ll.todos.length + 1, text: value || '', status: 'incomplete' })
     })
 
@@ -312,7 +314,7 @@ export default class {
   }
 
   reorderTodos (oldIndex, newIndex) {
-    this.loadedList = window.automerge.change(this.loadedList, 'Moving a todo', ll => {
+    this.loadedList = automerge.change(this.loadedList, 'Moving a todo', ll => {
       ll.todos.splice(newIndex, 0, ll.todos.splice(oldIndex, 1)[0])
     })
 
