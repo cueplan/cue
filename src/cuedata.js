@@ -14,6 +14,10 @@ export default class {
     this.saving = 'Saved'
   }
 
+  listMeta (listIndex, collection) {
+    return this.lists.lists[this.lists.collections[collection][listIndex]]
+  }
+
   fetchData () {
     return this.blockstack.getFile(dataVersionFile, {decrypt: false})
     .then((contents) => {
@@ -157,7 +161,7 @@ export default class {
     }
 
     var listPath = '/lists/' + lists[0].contents.lists[lists.currentList].id + '.json'
-    return window.blockstack.getFile(listPath, {decrypt: true})
+    return this.blockstack.getFile(listPath, {decrypt: true})
     .then((currentList) => {
       lists.push({
         contents: this.removeObjectIds(JSON.parse(JSON.stringify(automerge.load(currentList)))),
@@ -202,7 +206,7 @@ export default class {
           contents = JSON.stringify(l.contents)
         }
         console.log(contents)
-        return window.blockstack.putFile(l.path, contents, {encrypt: l.encrypt})
+        return this.blockstack.putFile(l.path, contents, {encrypt: l.encrypt})
       }))
     })
   }
@@ -223,6 +227,7 @@ export default class {
     })
   }
 
+  // List Operations
   switchLoadedList (listIndex, collection) {
     return (this.throttledPushData.flush() || Promise.resolve())
     .then(() => {
@@ -240,10 +245,6 @@ export default class {
     .catch((error) => {
       console.log(error)
     })
-  }
-
-  listMeta (listIndex, collection) {
-    return this.lists.lists[this.lists.collections[collection][listIndex]]
   }
 
   newList (listName, collection) {
