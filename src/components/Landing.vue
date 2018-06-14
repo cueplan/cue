@@ -8,18 +8,16 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'landing',
-  data () {
-    return {
-      blockstack: window.blockstack
-    }
-  },
-
+  computed: mapState([
+    'blockstack'
+  ]),
   methods: {
     signIn () {
-      const blockstack = this.blockstack
-      blockstack.redirectToSignIn()
+      this.blockstack.redirectToSignIn()
     }
   }
 }
