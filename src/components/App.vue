@@ -7,8 +7,8 @@
 
 <script>
 
-import Landing from './components/Landing.vue'
-import Dashboard from './components/Dashboard.vue'
+import Landing from './Landing.vue'
+import Dashboard from './Dashboard.vue'
 
 export default {
   name: 'app',
@@ -35,4 +35,4 @@ export default {
 }
 </script>
 
-<style src="./assets/sass/app.scss" lang="scss"></style>
+<style src="../assets/sass/app.scss" lang="scss"></style>
