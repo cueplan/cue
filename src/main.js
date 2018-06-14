@@ -6,8 +6,6 @@ import Draggable from 'vuedraggable'
 import BootstrapVue from 'bootstrap-vue'
 import App from './components/App'
 
-window.blockstack = require('blockstack')
-
 Vue.use(Draggable)
 Vue.use(BootstrapVue)
 Vue.config.productionTip = false

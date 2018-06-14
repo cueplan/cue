@@ -63,7 +63,7 @@ export default {
   props: ['user'],
   data () {
     return {
-      cuedata: new CueData(window.blockstack),
+      cuedata: new CueData(this.$store.state.blockstack),
       collection: 'active',
       listIndex: 0
     }
@@ -183,7 +183,7 @@ export default {
 
     // account operations
     signOut () {
-      window.blockstack.signUserOut(window.location.href)
+      this.$store.state.blockstack.signUserOut(window.location.href)
     },
 
     backupData () {

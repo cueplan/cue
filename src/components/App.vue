@@ -9,18 +9,24 @@
 
 import Landing from './Landing.vue'
 import Dashboard from './Dashboard.vue'
+import { mapState } from 'vuex'
 
 export default {
   name: 'app',
   components: {Landing, Dashboard},
   mounted () {
-    const blockstack = this.blockstack
-    if (blockstack.isUserSignedIn()) {
-      this.userData = blockstack.loadUserData()
-      this.user = new blockstack.Person(this.userData.profile)
+    // this.$store.dispatch('signIn')
+    // .catch((pending) => {
+    //   if (pending) {
+    //     window.location = window.location.origin
+    //   }
+    // })
+    if (this.blockstack.isUserSignedIn()) {
+      this.userData = this.blockstack.loadUserData()
+      this.user = new this.blockstack.Person(this.userData.profile)
       this.user.username = this.userData.username
-    } else if (blockstack.isSignInPending()) {
-      blockstack.handlePendingSignIn()
+    } else if (this.blockstack.isSignInPending()) {
+      this.blockstack.handlePendingSignIn()
       .then((userData) => {
         window.location = window.location.origin
       })
@@ -28,10 +34,12 @@ export default {
   },
   data () {
     return {
-      blockstack: window.blockstack,
       user: null
     }
-  }
+  },
+  computed: mapState([
+    'blockstack'
+  ])
 }
 </script>
 
