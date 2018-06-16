@@ -7,7 +7,7 @@
             <img src="../assets/images/logo.png" height="48" width="144"/>
             <b-dropdown boundary="viewport" no-caret right class="user-dropdown" toggleClass="user-toggle">
               <template slot="button-content">
-                <img :src="user.avatarUrl() ? user.avatarUrl() : '/avatar-placeholder.png'" class="avatar"/>
+                <img :src="avatarUrl" class="avatar"/>
               </template>
               <b-dropdown-item @click.prevent="signOut">Sign Out</b-dropdown-item>
               <b-dropdown-item @click.prevent="backupData">Backup Data</b-dropdown-item>
@@ -20,7 +20,7 @@
             <b-tabs card v-model="listsIndex">
               <b-tab title="Current">
                 <listlist
-                  :lists="activelists"
+                  :lists="activeLists"
                   :collection="'active'"
                   v-on:switchList="switchToList"
                   v-on:newList="newList"
@@ -29,7 +29,7 @@
               </b-tab>
               <b-tab title="Archive">
                 <listlist
-                  :lists="archivelists"
+                  :lists="archiveLists"
                   :collection="'archive'"
                   v-on:switchList="switchToList"
                   v-on:newList="newList"
@@ -53,14 +53,15 @@ import ListList from './ListList.vue'
 import CueList from './CueList.vue'
 import draggable from 'vuedraggable'
 import CueData from '../cuedata.js'
+import { mapState, mapGetters } from 'vuex'
 
 export default {
   name: 'dashboard',
   components: {
     listlist: ListList,
     draggable,
-    cuelist: CueList },
-  props: ['user'],
+    cuelist: CueList
+  },
   data () {
     return {
       cuedata: new CueData(this.$store.state.blockstack),
@@ -69,6 +70,9 @@ export default {
     }
   },
   computed: {
+    avatarUrl: function () {
+      return this.user.avatarUrl() ? this.user.avatarUrl() : require('../assets/images/avatar-placeholder.png')
+    },
     currentCollection: function () {
       if (typeof this.cuedata.lists.collections === 'undefined') {
         return
@@ -89,28 +93,21 @@ export default {
         }
       }
     },
-    activelists: {
-      get: function () {
-        if (typeof this.cuedata.lists.lists === 'undefined' || typeof this.cuedata.lists.collections === 'undefined') {
-          return []
-        }
-        return this.cuedata.lists.collections['active'].map(l => this.cuedata.lists.lists[l].name)
-      }
-    },
-    archivelists: {
-      get: function () {
-        if (typeof this.cuedata.lists.lists === 'undefined' || typeof this.cuedata.lists.collections === 'undefined') {
-          return []
-        }
-        return this.cuedata.lists.collections['archive'].map(l => this.cuedata.lists.lists[l].name)
-      }
-    }
+    ...mapState([
+      'user',
+      'lists'
+    ]),
+    ...mapGetters([
+      'activeLists',
+      'archiveLists'
+    ])
   },
   created () {
     window.addEventListener('beforeunload', this.beforeUnload)
   },
   mounted () {
     this.cuedata.fetchData()
+    this.$store.dispatch('loadLists')
   },
   methods: {
     // TODO: should not be something that hits cuedata, unless a list needs to be loaded into memory

@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <landing v-if="isSignedOut"></landing>
-    <dashboard v-if="user" :user="user"></dashboard>
+    <dashboard v-if="user"></dashboard>
   </div>
 </template>
 
