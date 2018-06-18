@@ -21,7 +21,6 @@
               <b-tab title="Current">
                 <listlist
                   :lists="activeLists"
-                  :collection="'active'"
                   v-on:switchList="switchToList"
                   v-on:newList="newList"
                   v-on:reorderList="reorderList"
@@ -30,7 +29,6 @@
               <b-tab title="Archive">
                 <listlist
                   :lists="archiveLists"
-                  :collection="'archive'"
                   v-on:switchList="switchToList"
                   v-on:newList="newList"
                   v-on:reorderList="reorderList"
@@ -42,7 +40,7 @@
         </div>
       </b-col>
       <b-col sm>
-        <cuelist :cuedata="cuedata" v-on:archiveList="archiveList" v-on:changeListName="changeListName"/>
+        <cuelist :cuedata="{ loadedList: null }" v-on:archiveList="archiveList" v-on:changeListName="changeListName"/>
       </b-col>
     </b-row>
   </b-container>
@@ -52,8 +50,7 @@
 import ListList from './ListList.vue'
 import CueList from './CueList.vue'
 import draggable from 'vuedraggable'
-import CueData from '../cuedata.js'
-import { mapState, mapGetters } from 'vuex'
+import { mapState, mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'dashboard',
@@ -64,14 +61,13 @@ export default {
   },
   data () {
     return {
-      cuedata: new CueData(this.$store.state.blockstack),
       collection: 'active',
       listIndex: 0
     }
   },
   computed: {
     avatarUrl: function () {
-      return this.user.avatarUrl() ? this.user.avatarUrl() : require('../assets/images/avatar-placeholder.png')
+      return this.userAvatarUrl || require('../assets/images/avatar-placeholder.png')
     },
     currentCollection: function () {
       if (typeof this.cuedata.lists.collections === 'undefined') {
@@ -99,88 +95,50 @@ export default {
     ]),
     ...mapGetters([
       'activeLists',
-      'archiveLists'
+      'archiveLists',
+      'userAvatarUrl'
     ])
   },
   created () {
     window.addEventListener('beforeunload', this.beforeUnload)
   },
   mounted () {
-    this.cuedata.fetchData()
     this.$store.dispatch('loadLists')
+    .then(() => {
+      this.$store.dispatch('switchPrimaryList', { listIndex: 0, force: true })
+    })
   },
   methods: {
-    // TODO: should not be something that hits cuedata, unless a list needs to be loaded into memory
+    ...mapActions([
+      'archiveList',
+      'reorderList'
+    ]),
+
     switchToCollection (collection) {
-      if (this.collection === collection) {
-        return
-      }
-
-      (this.cuedata.throttledPushData.flush() || Promise.resolve())
-      .then(() => {
-        this.collection = collection
-        this.switchToList(this.currentCollection.length > 0 ? 0 : -1, true)
-      })
+      this.$store.commit('setCollection', collection)
     },
 
-    // TODO: should not be something that hits cuedata, unless a list needs to be loaded into memory
     switchToList (listIndex, force) {
-      if (this.listIndex === listIndex && !force) {
-        return
-      }
-
-      this.listIndex = listIndex
-      this.cuedata.switchLoadedList(listIndex, this.collection)
-    },
-
-    // List operations
-    reorderList (oldIndex, newIndex) {
-      this.cuedata.reorderList(oldIndex, newIndex, this.collection)
-      if (this.listIndex > oldIndex && this.listIndex <= newIndex) {
-        this.listIndex--
-      } else if (this.listIndex >= newIndex && this.listIndex < oldIndex) {
-        this.listIndex++
-      } else if (this.listIndex === oldIndex) {
-        this.listIndex = newIndex
-      }
-    },
-
-    archiveList () {
-      this.cuedata.archiveList(this.listIndex, this.collection)
-
-      if (this.listIndex >= this.currentCollection.length) {
-        this.listIndex--
-      }
-
-      this.switchToList(this.listIndex, true)
+      this.$store.dispatch('switchPrimaryList', { listIndex: listIndex, force: force })
     },
 
     newList () {
-      const today = new Date()
-      var listName = today.toLocaleDateString()
-
-      this.cuedata.newList(listName, this.collection)
-
-      this.listIndex = this.currentCollection.length - 1
+      this.$store.dispatch('newList')
     },
 
     changeListName (newName) {
-      if (!newName || this.cuedata.lists.lists.find(l => l.name === newName)) {
-        return
-      }
-
-      this.cuedata.changeListName(this.listIndex, this.collection, newName)
+      this.$store.dispatch('changeListName', newName)
     },
 
     beforeUnload (e) {
-      if (!this.cuedata.saved) {
+      if (!this.$store.state.listsSaved) {
         e.returnValue = "Latest changes haven't been saved. Are you sure?"
       }
     },
 
     // account operations
     signOut () {
-      this.$store.state.blockstack.signUserOut(window.location.href)
+      this.$store.dispatch('signOut')
     },
 
     backupData () {

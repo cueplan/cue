@@ -2,24 +2,19 @@
   <div class="hello">
     <div>
       <img id="logo" src="../assets/images/logo.png" height="256" width="768"/>
-      <button class="btn btn-default" @click.prevent="signIn">Sign In With Blockstack</button>
+      <button class="btn btn-default" @click.prevent="redirectToSignIn">Sign In With Blockstack</button>
     </div>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'landing',
-  computed: mapState([
-    'blockstack'
-  ]),
-  methods: {
-    signIn () {
-      this.blockstack.redirectToSignIn()
-    }
-  }
+  methods: mapActions([
+    'redirectToSignIn'
+  ])
 }
 </script>
 

@@ -1,11 +1,11 @@
 <template>
-  <b-card v-if="cuedata.loadedList" class="page-header" no-body>
+  <b-card v-if="primaryList" class="page-header" no-body>
     <div slot="header">
-      <input id="listNameInput" ref="listNameInput" v-bind:value="cuedata.loadedList.name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
+      <input id="listNameInput" ref="listNameInput" v-bind:value="primaryList.name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
       <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
         <b-dropdown-item class="dropdown-item" @click="$emit('archiveList')">Archive List</b-dropdown-item>
       </b-dropdown>
-      <small><span class="saving-status">{{ cuedata.saving }}</span></small>
+      <small><span class="saving-status">{{ $store.state.listsSaved }}</span></small>
     </div>
 
     <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
@@ -31,13 +31,13 @@
 <script>
 import SingleTodo from './SingleTodo.vue'
 import draggable from 'vuedraggable'
+import { mapState } from 'vuex'
 
 export default {
   name: 'cuelist',
   components: {
     draggable,
     singletodo: SingleTodo },
-  props: ['cuedata'],
   data () {
     return {
       focusedId: null,
@@ -47,11 +47,14 @@ export default {
   computed: {
     todoOrder: {
       get: function () {
-        return this.cuedata.loadedList.todos || []
+        return this.primaryList.todos || []
       },
       set: function (value) {
       }
-    }
+    },
+    ...mapState([
+      'primaryList'
+    ])
   },
   methods: {
     changeListName () {
@@ -59,26 +62,26 @@ export default {
     },
 
     deleteTodo (todoId) {
-      this.cuedata.deleteTodo(todoId)
+      // this.cuedata.deleteTodo(todoId)
     },
 
     completeTodo (todoId, value) {
-      this.cuedata.completeTodo(todoId, value)
+      // this.cuedata.completeTodo(todoId, value)
     },
 
     changeTodoText (todoId, value) {
-      this.cuedata.changeTodoText(todoId, value)
+      // this.cuedata.changeTodoText(todoId, value)
     },
 
     insertTodoAfter (todoId, value) {
-      this.cuedata.insertTodoAfter(todoId, value)
+      // this.cuedata.insertTodoAfter(todoId, value)
 
       this.pendingFocusId = todoId + 1
       this.focusedId = todoId + 1
     },
 
     reorderTodos (oldIndex, newIndex) {
-      this.cuedata.reorderTodos(oldIndex, newIndex)
+      // this.cuedata.reorderTodos(oldIndex, newIndex)
     },
 
     onDragEnd (evt) {
@@ -100,7 +103,7 @@ export default {
     },
 
     focusNextTodo (todoId) {
-      this.pendingFocusId = this.focusedId = Math.min(todoId + 1, this.cuedata.loadedList.todos.length - 1)
+      this.pendingFocusId = this.focusedId = Math.min(todoId + 1, this.primaryList.todos.length - 1)
     },
 
     editListNameKeyUp (e) {

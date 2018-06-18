@@ -40,7 +40,7 @@ export default {
     },
 
     onDragEnd (evt) {
-      this.$emit('reorderList', evt.oldIndex, evt.newIndex)
+      this.$emit('reorderList', { oldIndex: evt.oldIndex, newIndex: evt.newIndex })
     }
   }
 }
