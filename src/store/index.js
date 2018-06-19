@@ -1,4 +1,5 @@
 import automerge from 'automerge'
+import lodash from 'lodash'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
@@ -10,6 +11,14 @@ const listsFile = 'lists.json'
 const dataVersionFile = 'version.json'
 
 var blockstack = require('blockstack')
+
+var debouncedSaveLists = lodash.debounce((dispatch) => {
+  dispatch('saveLists')
+}, 2000, { maxWait: 30000 })
+
+var debouncedSavePrimaryList = lodash.debounce((dispatch) => {
+  dispatch('savePrimaryList')
+}, 2000, { maxWait: 30000 })
 
 export default new Vuex.Store({
   state () {
@@ -227,14 +236,14 @@ export default new Vuex.Store({
 
     archiveList ({ commit, dispatch }) {
       commit('archiveList')
-      return dispatch('saveLists')
+      debouncedSaveLists(dispatch)
       // TODO: handle dispatch failure
     },
 
     reorderList ({ commit, dispatch }, { oldIndex, newIndex }) {
       console.log(oldIndex, newIndex)
       commit('reorderList', { oldIndex, newIndex })
-      return dispatch('saveLists')
+      debouncedSaveLists(dispatch)
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
@@ -247,12 +256,12 @@ export default new Vuex.Store({
       })
     },
 
-    switchPrimaryList ({ commit, dispatch, state, getters }, { listIndex, force }) {
+    switchPrimaryList ({ commit, state, getters }, { listIndex, force }) {
       if (state.listIndex === listIndex && !force) {
         return Promise.resolve()
       }
 
-      return Promise.resolve() // dispatch('savePrimaryList')
+      return (debouncedSavePrimaryList.flush() || Promise.resolve())
       .then(() => {
         console.log(listIndex)
         if (listIndex === -1) {
@@ -271,10 +280,12 @@ export default new Vuex.Store({
     },
 
     newList ({ commit, dispatch }) {
-      commit('newList')
-      return dispatch('saveLists')
+      return (debouncedSavePrimaryList.flush() || Promise.resolve)
       .then(() => {
-        return dispatch('savePrimaryList')
+        commit('newList')
+
+        debouncedSaveLists(dispatch)
+        debouncedSavePrimaryList(dispatch)
       })
       // TODO: handle dispatch failure (i.e. rollback)
     },
@@ -286,45 +297,38 @@ export default new Vuex.Store({
 
       commit('changeListName', newName)
 
-      return dispatch('saveLists')
-      .then(() => {
-        dispatch('savePrimaryList')
-      })
+      debouncedSaveLists(dispatch)
+      debouncedSavePrimaryList(dispatch)
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
     deleteTodo ({ commit, dispatch }, todoId) {
       commit('deleteTodo', todoId)
-
-      return dispatch('savePrimaryList')
+      debouncedSavePrimaryList(dispatch)
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
     completeTodo ({ commit, dispatch }, { todoId, value }) {
       commit('completeTodo', { todoId, value })
-
-      return dispatch('savePrimaryList')
+      debouncedSavePrimaryList(dispatch)
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
     changeTodoText ({ commit, dispatch }, { todoId, value }) {
       commit('changeTodoText', { todoId, value })
-
-      return dispatch('savePrimaryList')
+      debouncedSavePrimaryList(dispatch)
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
     insertTodoAfter ({ commit, dispatch }, todoId) {
       commit('insertTodoAfter', todoId)
-
-      return dispatch('savePrimaryList')
+      debouncedSavePrimaryList(dispatch)
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
     reorderTodos ({ commit, dispatch }, { oldIndex, newIndex }) {
       commit('reorderTodos', { oldIndex, newIndex })
-
-      return dispatch('savePrimaryList')
+      debouncedSavePrimaryList(dispatch)
       // TODO: handle dispatch failure (i.e. rollback)
     }
   },
