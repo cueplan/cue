@@ -42,7 +42,7 @@ export default new Vuex.Store({
     },
 
     listMeta: (state) => (listIndex) => {
-      return state.lists.lists[state.lists.collections[state.collection][listIndex || state.listIndex]]
+      return state.lists.lists[state.lists.collections[state.collection][listIndex]]
     },
 
     userAvatarUrl: (state) => {
@@ -67,8 +67,8 @@ export default new Vuex.Store({
       state.listsSaved = true
     },
 
-    setListsSaved (state) {
-      state.listsSaved = true
+    setListsSaved (state, value) {
+      state.listsSaved = value
     },
 
     archiveList (state) {
@@ -124,6 +124,39 @@ export default new Vuex.Store({
       state.lists.lists[state.lists.collections[state.collection][state.listIndex]].name = newName
       state.primaryList = automerge.change(state.primaryList, 'Changing list name', ll => {
         ll.name = newName
+      })
+    },
+
+    deleteTodo (state, todoId) {
+      state.primaryList = automerge.change(state.primaryList, 'Delete a todo', ll => {
+        ll.todos.splice(todoId, 1)
+        if (ll.todos.length === 0) {
+          ll.todos.splice(0, 0, { id: 0, text: '', status: 'incomplete' })
+        }
+      })
+    },
+
+    completeTodo (state, { todoId, value }) {
+      state.primaryList = automerge.change(state.primaryList, 'Complete a todo', ll => {
+        ll.todos[todoId].status = value ? 'completed' : 'incomplete'
+      })
+    },
+
+    changeTodoText (state, { todoId, value }) {
+      state.primaryList = automerge.change(state.primaryList, 'Change todo text', ll => {
+        ll.todos[todoId].text = value
+      })
+    },
+
+    insertTodoAfter (state, { todoId, value }) {
+      state.primaryList = automerge.change(state.primaryList, 'Insert todo', ll => {
+        ll.todos.splice(todoId + 1, 0, { id: ll.todos.length + 1, text: value || '', status: 'incomplete' })
+      })
+    },
+
+    reorderTodos (state, { oldIndex, newIndex }) {
+      state.primaryList = automerge.change(state.primaryList, 'Moving a todo', ll => {
+        ll.todos.splice(newIndex, 0, ll.todos.splice(oldIndex, 1)[0])
       })
     }
   },
@@ -183,17 +216,18 @@ export default new Vuex.Store({
       })
     },
 
-    saveLists ({ state }) {
+    saveLists ({ commit, state }) {
+      commit('setListsSaved', false)
       return state.blockstack.putFile(listsFile, JSON.stringify(state.lists), { encrypt: true })
+      .then(() => {
+        commit('setListsSaved', true)
+        return Promise.resolve()
+      })
     },
 
     archiveList ({ commit, dispatch }) {
       commit('archiveList')
       return dispatch('saveLists')
-      .then(() => {
-        commit('setListsSaved')
-        return Promise.resolve()
-      })
       // TODO: handle dispatch failure
     },
 
@@ -201,16 +235,16 @@ export default new Vuex.Store({
       console.log(oldIndex, newIndex)
       commit('reorderList', { oldIndex, newIndex })
       return dispatch('saveLists')
-      .then(() => {
-        commit('setListsSaved')
-        return Promise.resolve()
-      })
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
-    savePrimaryList () {
-      console.log('fake save primary list')
-      return Promise.resolve()
+    savePrimaryList ({ commit, state }) {
+      commit('setListsSaved', false)
+      return state.blockstack.putFile('/lists/' + state.primaryList.id + '.json', automerge.save(state.primaryList), { encrypt: true })
+      .then(() => {
+        commit('setListsSaved', true)
+        return Promise.resolve()
+      })
     },
 
     switchPrimaryList ({ commit, dispatch, state, getters }, { listIndex, force }) {
@@ -218,7 +252,7 @@ export default new Vuex.Store({
         return Promise.resolve()
       }
 
-      return dispatch('savePrimaryList')
+      return Promise.resolve() // dispatch('savePrimaryList')
       .then(() => {
         console.log(listIndex)
         if (listIndex === -1) {
@@ -242,15 +276,11 @@ export default new Vuex.Store({
       .then(() => {
         return dispatch('savePrimaryList')
       })
-      .then(() => {
-        commit('setListsSaved')
-        return Promise.resolve()
-      })
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
-    changeListName ({ commit, dispatch, state }, newName) {
-      if (!newName || state.lists.lists.find(l => l.name === newName)) {
+    changeListName ({ commit, dispatch }, newName) {
+      if (!newName) {
         return Promise.reject()
       }
 
@@ -260,10 +290,41 @@ export default new Vuex.Store({
       .then(() => {
         dispatch('savePrimaryList')
       })
-      .then(() => {
-        commit('setListsSaved')
-        return Promise.resolve()
-      })
+      // TODO: handle dispatch failure (i.e. rollback)
+    },
+
+    deleteTodo ({ commit, dispatch }, todoId) {
+      commit('deleteTodo', todoId)
+
+      return dispatch('savePrimaryList')
+      // TODO: handle dispatch failure (i.e. rollback)
+    },
+
+    completeTodo ({ commit, dispatch }, { todoId, value }) {
+      commit('completeTodo', { todoId, value })
+
+      return dispatch('savePrimaryList')
+      // TODO: handle dispatch failure (i.e. rollback)
+    },
+
+    changeTodoText ({ commit, dispatch }, { todoId, value }) {
+      commit('changeTodoText', { todoId, value })
+
+      return dispatch('savePrimaryList')
+      // TODO: handle dispatch failure (i.e. rollback)
+    },
+
+    insertTodoAfter ({ commit, dispatch }, todoId) {
+      commit('insertTodoAfter', todoId)
+
+      return dispatch('savePrimaryList')
+      // TODO: handle dispatch failure (i.e. rollback)
+    },
+
+    reorderTodos ({ commit, dispatch }, { oldIndex, newIndex }) {
+      commit('reorderTodos', { oldIndex, newIndex })
+
+      return dispatch('savePrimaryList')
       // TODO: handle dispatch failure (i.e. rollback)
     }
   },

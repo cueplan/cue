@@ -58,30 +58,30 @@ export default {
   },
   methods: {
     changeListName () {
-      this.$emit('changeListName', this.$refs.listNameInput.value.trim())
+      this.$store.dispatch('changeListName', this.$refs.listNameInput.value.trim())
     },
 
     deleteTodo (todoId) {
-      // this.cuedata.deleteTodo(todoId)
+      this.$store.dispatch('deleteTodo', todoId)
     },
 
     completeTodo (todoId, value) {
-      // this.cuedata.completeTodo(todoId, value)
+      this.$store.dispatch('completeTodo', { todoId, value })
     },
 
     changeTodoText (todoId, value) {
-      // this.cuedata.changeTodoText(todoId, value)
+      this.$store.dispatch('changeTodoText', { todoId, value })
     },
 
     insertTodoAfter (todoId, value) {
-      // this.cuedata.insertTodoAfter(todoId, value)
+      this.$store.dispatch('insertTodoAfter', { todoId, value })
 
       this.pendingFocusId = todoId + 1
       this.focusedId = todoId + 1
     },
 
     reorderTodos (oldIndex, newIndex) {
-      // this.cuedata.reorderTodos(oldIndex, newIndex)
+      this.$store.dispatch('reorderTodos', {oldIndex, newIndex})
     },
 
     onDragEnd (evt) {

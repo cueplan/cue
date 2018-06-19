@@ -59,21 +59,9 @@ export default {
     draggable,
     cuelist: CueList
   },
-  data () {
-    return {
-      collection: 'active',
-      listIndex: 0
-    }
-  },
   computed: {
     avatarUrl: function () {
       return this.userAvatarUrl || require('../assets/images/avatar-placeholder.png')
-    },
-    currentCollection: function () {
-      if (typeof this.cuedata.lists.collections === 'undefined') {
-        return
-      }
-      return this.cuedata.lists.collections[this.collection]
     },
     listsIndex: {
       get: function () {
@@ -91,7 +79,8 @@ export default {
     },
     ...mapState([
       'user',
-      'lists'
+      'lists',
+      'collection'
     ]),
     ...mapGetters([
       'activeLists',
@@ -119,7 +108,7 @@ export default {
     },
 
     switchToList (listIndex, force) {
-      this.$store.dispatch('switchPrimaryList', { listIndex: listIndex, force: force })
+      this.$store.dispatch('switchPrimaryList', { listIndex, force })
     },
 
     newList () {
