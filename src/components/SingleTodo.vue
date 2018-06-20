@@ -82,6 +82,7 @@ label {
     margin-right: 5px;
   }
 }
+
 .list-group-item {
   .delete {
     display: none;
@@ -115,6 +116,8 @@ label {
   position: absolute;
   opacity: 0;
   cursor: pointer;
+  left: 0px;
+  top: 0px;
 }
 
 /* Create a custom checkbox */
