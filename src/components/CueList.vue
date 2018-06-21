@@ -5,7 +5,7 @@
       <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
         <b-dropdown-item class="dropdown-item" @click="$emit('archiveList')">Archive List</b-dropdown-item>
       </b-dropdown>
-      <small><span class="saving-status">{{ $store.state.listsSaved }}</span></small>
+      <small><span class="saving-status">{{ $store.state.listsSaved ? 'Saved' : 'Saving...' }}</span></small>
     </div>
 
     <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable', handle:'.handle'}" @end="onDragEnd">
@@ -130,5 +130,10 @@ label {
   input[type="checkbox"] {
     margin-right: 5px;
   }
+}
+
+.page-header .list-group {
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 </style>
