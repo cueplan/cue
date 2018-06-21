@@ -131,7 +131,7 @@ export default {
     },
 
     backupData () {
-      this.cuedata.backupData()
+      this.$store.dispatch('backupData')
       .then((backup) => {
         this.download('backup.json', JSON.stringify(backup))
       })
@@ -151,7 +151,8 @@ export default {
     },
 
     restoreBackup (e) {
-      this.cuedata.restoreBackup(e.target.files[0])
+      // TODO: just reload inside the store, once restoreBackup is complete
+      this.$store.dispatch('restoreBackup', e.target.files[0])
       .then(() => {
         window.location.reload()
       })

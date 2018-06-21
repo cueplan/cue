@@ -20,6 +20,35 @@ var debouncedSavePrimaryList = lodash.debounce((dispatch) => {
   dispatch('savePrimaryList')
 }, 2000, { maxWait: 30000 })
 
+var removeObjectIds = function myself (obj) {
+  console.log(obj)
+  for (var p in obj) {
+    if (p.startsWith('_objectId')) {
+      delete obj[p]
+    } else if (obj.hasOwnProperty(p) && typeof obj[p] === 'object') {
+      myself(obj[p])
+    }
+  }
+
+  return obj
+}
+
+var readFile = function (file) {
+  return new Promise((resolve, reject) => {
+    var reader = new FileReader()
+    reader.onload = () => {
+      resolve(reader.result)
+    }
+    reader.onabort = () => {
+      reject(reader.result)
+    }
+    reader.onerror = () => {
+      reject(reader.result)
+    }
+    reader.readAsText(file)
+  })
+}
+
 export default new Vuex.Store({
   state () {
     return {
@@ -338,6 +367,74 @@ export default new Vuex.Store({
       commit('reorderTodos', { oldIndex, newIndex })
       debouncedSavePrimaryList(dispatch)
       // TODO: handle dispatch failure (i.e. rollback)
+    },
+
+    backupData ({ dispatch, state }) {
+      var listsToBackup = []
+      listsToBackup.push({
+        contents: JSON.parse(JSON.stringify(state.lists)),
+        encrypt: true,
+        path: listsFile,
+        automerge: false
+      })
+      listsToBackup.push({
+        path: dataVersionFile,
+        contents: state.dataVersion,
+        encrypt: false,
+        automerge: false
+      })
+      listsToBackup.currentList = 0
+
+      return dispatch('backupOneList', listsToBackup)
+    },
+
+    backupOneList ({ dispatch, state }, lists) {
+      console.log(lists[0].contents)
+      if (lists.currentList >= lists[0].contents.lists.length) {
+        delete lists.currentList
+        return Promise.resolve(lists)
+      }
+
+      var listPath = '/lists/' + lists[0].contents.lists[lists.currentList].id + '.json'
+      return state.blockstack.getFile(listPath, {decrypt: true})
+      .then((currentList) => {
+        lists.push({
+          contents: removeObjectIds(JSON.parse(JSON.stringify(automerge.load(currentList)))),
+          encrypt: true,
+          automerge: true,
+          path: listPath
+        })
+        lists.currentList++
+        return dispatch('backupOneList', lists)
+      })
+      .catch(() => {
+        lists.currentList++
+        return dispatch('backupOneList', lists)
+      })
+    },
+
+    restoreBackup ({ state }, file) {
+      return readFile(file)
+      .then((contents) => {
+        var lists = JSON.parse(contents)
+        return Promise.all(lists.map((l) => {
+          var contents
+          if (l.automerge) {
+            contents = automerge.init()
+            contents = automerge.save(automerge.change(contents, 'restoring backup', c => {
+              for (var p in l.contents) {
+                if (!p.startsWith('_')) {
+                  c[p] = l.contents[p]
+                }
+              }
+            }))
+          } else {
+            contents = JSON.stringify(l.contents)
+          }
+          console.log(contents)
+          return state.blockstack.putFile(l.path, contents, {encrypt: l.encrypt})
+        }))
+      })
     }
   },
 
