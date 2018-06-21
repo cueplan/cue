@@ -115,7 +115,7 @@ body, #app {
   padding: 0px;
   box-sizing: border-box;
   border-color: transparent;
-  width: 80%;
+  flex-grow: 1;
   resize: none;
   outline-color: $primary;
   font-weight: 400;
@@ -143,4 +143,47 @@ a {
 
 .listlist .card-body {
   padding: 0px;
+}
+
+.handle {
+  font-size: 10pt;
+  padding: 0px 5px;
+  color: gray;
+  border-width: 0px;
+  border-radius: 0px;
+  margin: 0px;
+  background-color: transparent;
+}
+
+.handle:hover {
+  background-color: transparent;
+}
+
+.todo-row .handle {
+  color: transparent;
+  cursor: default;
+}
+
+.todo-row:hover .handle {
+  color: initial;
+  text-decoration: none;
+}
+
+.todo-row .handle:focus {
+  color: initial;
+  background-color: transparent;
+}
+
+.todo-row .handle:active {
+  color: initial;
+  background-color: transparent;
+}
+
+.todo-row .handle:not(:disabled):active {
+  color: initial;
+  background-color: transparent;
+}
+
+.todo-row .show .handle {
+  color: initial;
 }

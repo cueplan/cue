@@ -8,7 +8,7 @@
       <small><span class="saving-status">{{ $store.state.listsSaved }}</span></small>
     </div>
 
-    <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable'}" @end="onDragEnd">
+    <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable', handle:'.handle'}" @end="onDragEnd">
       <singletodo
         v-for="(todo, todoId) in todoOrder"
         :todo="todo"

@@ -1,24 +1,25 @@
 <template>
-   <label
-        class="list-group-item draggable todo-row"
-        :class="{completed: todo.completed}">
-        <input type="checkbox" class="item-checkbox" v-model="completed"/>
-        <span class="checkmark"></span>
-        <input
-          type="text"
-          v-model="todoText"
-          spellcheck=false
-          class="todo-input"
-          v-focus="focus"
-          @blur="$emit('todoBlurred', todoId)"
-          @focus="$emit('todoFocused', todoId)"
-          @keyup.enter.prevent="insertAfter(todoId, $event)"
-          @keydown.up.prevent="$emit('focusPrev', todoId)"
-          @keydown.down.prevent="$emit('focusNext', todoId)"/>
-        <a @click.prevent="deleteTodo(todoId)"
-        class="delete pull-right"
-        href="#">X</a>
-    </label>
+   <div class="todo-row draggable">
+        <b-dropdown text="≡" no-caret class="handle-dropdown" toggleClass="handle" offset="-20">
+          <b-dropdown-item class="dropdown-item" @click.prevent="deleteTodo(todoId)">Delete</b-dropdown-item>
+        </b-dropdown>
+        <label class="todo-label"
+          :class="{completed: todo.completed}">
+          <input type="checkbox" class="item-checkbox" v-model="completed"/>
+          <span class="checkmark" :id="'todo-'+todoId"></span>
+          <input
+            type="text"
+            v-model="todoText"
+            spellcheck=false
+            class="todo-input"
+            v-focus="focus"
+            @blur="$emit('todoBlurred', todoId)"
+            @focus="$emit('todoFocused', todoId)"
+            @keyup.enter.prevent="insertAfter(todoId, $event)"
+            @keydown.up.prevent="$emit('focusPrev', todoId)"
+            @keydown.down.prevent="$emit('focusNext', todoId)"/>
+        </label>
+    </div>
 </template>
 
 <script>
@@ -62,7 +63,7 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/sass/variables";
 
-.todo-row {
+.todo-label {
   padding: 2px 2px;
 }
 
@@ -98,21 +99,30 @@ label {
   }
 }
 
-/* Customize the label (the container) */
 .todo-row {
-  display: block;
+  display: inline-flex;
+}
+
+.todo-row .popover-fun {
+  color: initial;
+}
+
+/* Customize the label (the container) */
+.todo-label {
+  display: inline-flex;
   position: relative;
-  padding: 0px 0px 1px 35px;
+  padding: 0px 0px 1px 29px;
   cursor: pointer;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
   border-width: 0px;
+  flex-grow: 1;
 }
 
 /* Hide the browser's default checkbox */
-.todo-row input[type="checkbox"] {
+.todo-label input[type="checkbox"] {
   position: absolute;
   opacity: 0;
   cursor: pointer;
@@ -123,8 +133,8 @@ label {
 /* Create a custom checkbox */
 .checkmark {
   position: absolute;
-  top: 2px;
-  left: 6px;
+  top: 1px;
+  left: 4px;
   height: 21px;
   width: 21px;
   background-color: #fff;
@@ -132,13 +142,14 @@ label {
   border-style: solid;
   border-width: 1px;
   border-color: white;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
-.todo-row:hover input[type="checkbox"] ~ .checkmark {
+.todo-label:hover input[type="checkbox"] ~ .checkmark {
   border-color: $primary;
 }
 
-.todo-row input[type="checkbox"]:checked ~ .checkmark {
+.todo-label input[type="checkbox"]:checked ~ .checkmark {
   background-color: #fff;
 }
 
@@ -150,12 +161,12 @@ label {
 }
 
 /* Show the checkmark when checked */
-.todo-row input[type="checkbox"]:checked ~ .checkmark:after {
+.todo-label input[type="checkbox"]:checked ~ .checkmark:after {
   display: block;
 }
 
 /* Style the checkmark/indicator */
-.todo-row .checkmark:after {
+.todo-label .checkmark:after {
   left: 7px;
   top: 3px;
   width: 6px;
