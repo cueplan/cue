@@ -317,7 +317,7 @@ export default new Vuex.Store({
     },
 
     newList ({ commit, dispatch }) {
-      return (debouncedSavePrimaryList.flush() || Promise.resolve)
+      return (debouncedSavePrimaryList.flush() || Promise.resolve())
       .then(() => {
         commit('newList')
 
