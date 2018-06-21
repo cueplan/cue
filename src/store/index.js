@@ -127,6 +127,8 @@ export default new Vuex.Store({
       })
 
       state.listIndex = state.lists.collections[state.collection].length - 1
+
+      state.listsSaved = false
     },
 
     changeListName (state, newName) {
@@ -134,6 +136,7 @@ export default new Vuex.Store({
       state.primaryList = automerge.change(state.primaryList, 'Changing list name', ll => {
         ll.name = newName
       })
+      state.listsSaved = false
     },
 
     deleteTodo (state, todoId) {
@@ -143,30 +146,35 @@ export default new Vuex.Store({
           ll.todos.splice(0, 0, { id: 0, text: '', status: 'incomplete' })
         }
       })
+      state.listsSaved = false
     },
 
     completeTodo (state, { todoId, value }) {
       state.primaryList = automerge.change(state.primaryList, 'Complete a todo', ll => {
         ll.todos[todoId].status = value ? 'completed' : 'incomplete'
       })
+      state.listsSaved = false
     },
 
     changeTodoText (state, { todoId, value }) {
       state.primaryList = automerge.change(state.primaryList, 'Change todo text', ll => {
         ll.todos[todoId].text = value
       })
+      state.listsSaved = false
     },
 
     insertTodoAfter (state, { todoId, value }) {
       state.primaryList = automerge.change(state.primaryList, 'Insert todo', ll => {
         ll.todos.splice(todoId + 1, 0, { id: ll.todos.length + 1, text: value || '', status: 'incomplete' })
       })
+      state.listsSaved = false
     },
 
     reorderTodos (state, { oldIndex, newIndex }) {
       state.primaryList = automerge.change(state.primaryList, 'Moving a todo', ll => {
         ll.todos.splice(newIndex, 0, ll.todos.splice(oldIndex, 1)[0])
       })
+      state.listsSaved = false
     }
   },
 
