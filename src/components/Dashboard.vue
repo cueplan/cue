@@ -40,7 +40,7 @@
         </div>
       </b-col>
       <b-col sm>
-        <cuelist :cuedata="{ loadedList: null }" v-on:changeListName="changeListName"/>
+        <cuelist v-on:changeListName="changeListName"/>
       </b-col>
     </b-row>
   </b-container>
