@@ -40,7 +40,7 @@
         </div>
       </b-col>
       <b-col sm>
-        <cuelist :cuedata="{ loadedList: null }" v-on:archiveList="archiveList" v-on:changeListName="changeListName"/>
+        <cuelist :cuedata="{ loadedList: null }" v-on:changeListName="changeListName"/>
       </b-col>
     </b-row>
   </b-container>
@@ -78,14 +78,15 @@ export default {
       }
     },
     ...mapState([
-      'user',
       'lists',
       'collection'
     ]),
+    ...mapGetters('user', [
+      'userAvatarUrl'
+    ]),
     ...mapGetters([
       'activeLists',
-      'archiveLists',
-      'userAvatarUrl'
+      'archiveLists'
     ])
   },
   created () {
@@ -99,7 +100,6 @@ export default {
   },
   methods: {
     ...mapActions([
-      'archiveList',
       'reorderList'
     ]),
 

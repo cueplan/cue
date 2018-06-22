@@ -9,13 +9,15 @@
 
 import Landing from './Landing.vue'
 import Dashboard from './Dashboard.vue'
-import { mapState } from 'vuex'
+import { createNamespacedHelpers } from 'vuex'
+
+const { mapState, mapActions } = createNamespacedHelpers('user')
 
 export default {
   name: 'app',
   components: {Landing, Dashboard},
   created () {
-    this.$store.dispatch('signIn')
+    this.signIn()
     .catch(() => {
       window.location = window.location.origin
     })
@@ -23,6 +25,9 @@ export default {
   computed: mapState([
     'user',
     'isSignedOut'
+  ]),
+  methods: mapActions([
+    'signIn'
   ])
 }
 </script>

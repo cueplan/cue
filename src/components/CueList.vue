@@ -3,7 +3,7 @@
     <div slot="header">
       <input id="listNameInput" ref="listNameInput" v-bind:value="primaryList.name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
       <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
-        <b-dropdown-item class="dropdown-item" @click="$emit('archiveList')">Archive List</b-dropdown-item>
+        <b-dropdown-item class="dropdown-item" @click="archiveList">Archive List</b-dropdown-item>
       </b-dropdown>
       <small><span class="saving-status">{{ $store.state.listsSaved ? 'Saved' : 'Saving...' }}</span></small>
     </div>
@@ -31,7 +31,7 @@
 <script>
 import SingleTodo from './SingleTodo.vue'
 import draggable from 'vuedraggable'
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'cuelist',
@@ -57,6 +57,9 @@ export default {
     ])
   },
   methods: {
+    ...mapActions([
+      'archiveList'
+    ]),
     changeListName () {
       this.$store.dispatch('changeListName', this.$refs.listNameInput.value.trim())
     },
