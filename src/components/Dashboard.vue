@@ -127,7 +127,7 @@ export default {
 
     // account operations
     signOut () {
-      this.$store.dispatch('signOut')
+      this.$store.dispatch('user/signOut')
     },
 
     backupData () {

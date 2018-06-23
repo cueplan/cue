@@ -46,16 +46,18 @@ const userModule = {
 
     signOut ({ commit, rootState }) {
       commit('signOut')
-      rootState.blockstack.signUserOut(window.location.href)
+      rootState.blockstack.signUserOut()
     }
   },
 
   getters: {
-    userAvatarUrl: (state, getters, rootState) => {
-      if (rootState.blockstack.isUserSignedIn()) {
-        var userData = rootState.blockstack.loadUserData()
-        var user = new rootState.blockstack.Person(userData.profile)
-        return user.avatarUrl()
+    userAvatarUrl: (state) => {
+      if (typeof state.user === 'undefined') {
+        return null
+      }
+
+      if (state.user !== null) {
+        return state.user.avatarUrl()
       }
 
       return null

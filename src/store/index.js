@@ -192,6 +192,7 @@ export default new Vuex.Store({
   },
 
   actions: {
+    // Meta specific
     loadLists ({ dispatch, state }) {
       return state.blockstack.getFile(dataVersionFile, {decrypt: false})
       .then((contents) => {
@@ -241,16 +242,8 @@ export default new Vuex.Store({
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
-    savePrimaryList ({ commit, state }) {
-      commit('setListsSaved', false)
-      return state.blockstack.putFile('/lists/' + state.primaryList.id + '.json', automerge.save(state.primaryList), { encrypt: true })
-      .then(() => {
-        commit('setListsSaved', true)
-        return Promise.resolve()
-      })
-    },
-
-    switchPrimaryList ({ commit, state, getters }, { listIndex, force }) {
+    // List + meta
+    switchPrimaryList ({ commit, state }, { listIndex, force }) {
       if (state.listIndex === listIndex && !force) {
         return Promise.resolve()
       }
@@ -296,6 +289,16 @@ export default new Vuex.Store({
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
+    // List specific
+    savePrimaryList ({ commit, state }) {
+      commit('setListsSaved', false)
+      return state.blockstack.putFile('/lists/' + state.primaryList.id + '.json', automerge.save(state.primaryList), { encrypt: true })
+      .then(() => {
+        commit('setListsSaved', true)
+        return Promise.resolve()
+      })
+    },
+
     deleteTodo ({ commit, dispatch }, todoId) {
       commit('deleteTodo', todoId)
       debouncedSavePrimaryList(dispatch)
@@ -326,6 +329,7 @@ export default new Vuex.Store({
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
+    // Backup/Restore
     backupData ({ dispatch, state }) {
       var listsToBackup = []
       listsToBackup.push({
