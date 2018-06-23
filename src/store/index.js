@@ -60,8 +60,6 @@ export default new Vuex.Store({
       blockstack: blockstack,
       dataVersion: 0,
       lists: {},
-      collection: 'active',
-      listIndex: 0,
       listsSaved: true,
       primaryList: {}
     }
@@ -72,14 +70,14 @@ export default new Vuex.Store({
       if (typeof state.lists.lists === 'undefined' || typeof state.lists.collections === 'undefined') {
         return []
       }
-      return { collection: 'active', lists: state.lists.collections.active.map(l => state.lists.lists[l].name) }
+      return { collection: 'active', lists: state.lists.collections.active.map(l => { return { name: state.lists.lists[l].name, id: state.lists.lists[l].id } }) }
     },
 
     archiveLists: (state) => {
       if (typeof state.lists.lists === 'undefined' || typeof state.lists.collections === 'undefined') {
         return []
       }
-      return { collection: 'archive', lists: state.lists.collections.archive.map(l => state.lists.lists[l].name) }
+      return { collection: 'archive', lists: state.lists.collections.archive.map(l => { return { name: state.lists.lists[l].name, id: state.lists.lists[l].id } }) }
     }
   },
 
@@ -93,35 +91,12 @@ export default new Vuex.Store({
       state.listsSaved = value
     },
 
-    archiveList (state) {
-      var archived = state.lists.collections[state.collection].splice(state.listIndex, 1)
-      state.lists.collections.archive.push(archived)
-
-      if (state.listIndex >= state.lists.collections[state.collection].length) {
-        state.listIndex--
-      }
-
-      state.listsSaved = false
-    },
-
-    setCollection (state, collection) {
-      state.collection = collection
-    },
-
     reorderList (state, { collection, oldIndex, newIndex }) {
       state.lists.collections[collection].splice(newIndex, 0, state.lists.collections[collection].splice(oldIndex, 1)[0])
-      if (state.listIndex > oldIndex && state.listIndex <= newIndex) {
-        state.listIndex--
-      } else if (state.listIndex >= newIndex && state.listIndex < oldIndex) {
-        state.listIndex++
-      } else if (state.listIndex === oldIndex) {
-        state.listIndex = newIndex
-      }
       state.listsSaved = false
     },
 
-    setPrimaryList (state, { primaryList, listIndex }) {
-      state.listIndex = listIndex
+    setPrimaryList (state, primaryList) {
       state.primaryList = primaryList
     },
 
@@ -138,8 +113,6 @@ export default new Vuex.Store({
         ll.id = listId
         ll.todos = [ { id: 0, text: '', status: 'incomplete' } ]
       })
-
-      state.listIndex = state.lists.collections[collection].length - 1
 
       state.listsSaved = false
     },
@@ -229,12 +202,6 @@ export default new Vuex.Store({
       })
     },
 
-    archiveList ({ commit, dispatch }) {
-      commit('archiveList')
-      debouncedSaveLists(dispatch)
-      // TODO: handle dispatch failure
-    },
-
     reorderList ({ commit, dispatch }, { collection, oldIndex, newIndex }) {
       console.log(oldIndex, newIndex)
       commit('reorderList', { collection, oldIndex, newIndex })
@@ -243,22 +210,21 @@ export default new Vuex.Store({
     },
 
     // List + meta
-    switchPrimaryList ({ commit, state }, { listIndex, force }) {
-      if (state.listIndex === listIndex && !force) {
+    switchPrimaryList ({ commit, state }, listId) {
+      if (state.primaryList !== null && state.primaryList.id === listId) {
         return Promise.resolve()
       }
 
       return (debouncedSavePrimaryList.flush() || Promise.resolve())
       .then(() => {
-        console.log(listIndex)
-        if (listIndex === -1) {
+        if (listId === -1) {
           return Promise.reject()
         }
-        return state.blockstack.getFile('/lists/' + state.lists.lists[state.lists.collections[state.collection][listIndex]].id + '.json', { decrypt: true })
+        return state.blockstack.getFile('/lists/' + listId + '.json', { decrypt: true })
       })
       .then((contents) => {
         var primaryList = automerge.load(contents) || automerge.init()
-        commit('setPrimaryList', { primaryList: primaryList, listIndex: listIndex })
+        commit('setPrimaryList', primaryList)
         return Promise.resolve()
       })
       .catch((error) => {

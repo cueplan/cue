@@ -1,11 +1,11 @@
 <template>
   <draggable element="b-list-group" class="listlist" v-model="listOrder" :options="{draggable:'.draggable'}" @end="onDragEnd" flush :component-data="{flush: ''}">
-    <b-list-group-item v-for="(list, index) in listOrder"
+    <b-list-group-item v-for="list in listOrder"
       class="draggable"
-      :key="index">
-      <a @click.prevent="switchToList(index)" href="#">{{ list }}</a>
+      :key="list.id">
+      <a @click.prevent="switchToList(list.id)" href="#">{{ list.name }}</a>
     </b-list-group-item>
-    <b-list-group-item slot="footer">
+    <b-list-group-item slot="footer" class="new-list-item">
       <a @click.prevent="newList" href="#">+ New List</a>
     </b-list-group-item>
   </draggable>
@@ -31,8 +31,8 @@ export default {
     }
   },
   methods: {
-    switchToList (list) {
-      this.$emit('switchList', list)
+    switchToList (listId) {
+      this.$emit('switchList', listId)
     },
 
     newList () {
@@ -45,3 +45,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.new-list-item {
+  text-align: center;
+}
+</style>

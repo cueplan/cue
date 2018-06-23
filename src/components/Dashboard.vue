@@ -23,7 +23,7 @@
               <b-button variant="link">Plan Tomorrow</b-button>
             </b-card>
             <b-card no-body>
-              <b-tabs card v-model="listsIndex">
+              <b-tabs card v-model="collection">
                 <b-tab title="Current">
                   <listlist
                     :lists="activeLists"
@@ -65,27 +65,17 @@ export default {
     draggable,
     cuelist: CueList
   },
+  data () {
+    return {
+      collection: 0
+    }
+  },
   computed: {
     avatarUrl: function () {
       return this.userAvatarUrl || require('../assets/images/avatar-placeholder.png')
     },
-    listsIndex: {
-      get: function () {
-        return this.collection === 'active' ? 0
-          : this.collection === 'archive' ? 1
-          : 2
-      },
-      set: function (value) {
-        if (value === 0) {
-          this.switchToCollection('active')
-        } else if (value === 1) {
-          this.switchToCollection('archive')
-        }
-      }
-    },
     ...mapState([
-      'lists',
-      'collection'
+      'lists'
     ]),
     ...mapGetters('user', [
       'userAvatarUrl'
@@ -101,7 +91,7 @@ export default {
   mounted () {
     this.$store.dispatch('loadLists')
     .then(() => {
-      this.$store.dispatch('switchPrimaryList', { listIndex: 0, force: true })
+      this.$store.dispatch('switchPrimaryList', this.$store.state.lists.lists[this.$store.state.lists.collections.active[0]].id)
     })
   },
   methods: {
@@ -109,12 +99,8 @@ export default {
       'reorderList'
     ]),
 
-    switchToCollection (collection) {
-      this.$store.commit('setCollection', collection)
-    },
-
-    switchToList (listIndex, force) {
-      this.$store.dispatch('switchPrimaryList', { listIndex, force })
+    switchToList (listId) {
+      this.$store.dispatch('switchPrimaryList', listId)
     },
 
     newList (collection) {
