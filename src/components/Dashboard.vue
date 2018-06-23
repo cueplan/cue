@@ -15,26 +15,32 @@
               <input type="file" ref="restoreinput" id="restoreinput" accept=".json" v-on:change="restoreBackup"/>
             </b-dropdown>
           </div>
-          <div class="listlist">
+          <div>
+            <b-card class="today-card" no-body>
+              <b-list-group flush>
+                <b-list-group-item variant="primary"><a href="#">Today's Plan</a></b-list-group-item>
+              </b-list-group>
+              <b-button variant="link">Plan Tomorrow</b-button>
+            </b-card>
             <b-card no-body>
-            <b-tabs card v-model="listsIndex">
-              <b-tab title="Current">
-                <listlist
-                  :lists="activeLists"
-                  v-on:switchList="switchToList"
-                  v-on:newList="newList"
-                  v-on:reorderList="reorderList"
-                />
-              </b-tab>
-              <b-tab title="Archive">
-                <listlist
-                  :lists="archiveLists"
-                  v-on:switchList="switchToList"
-                  v-on:newList="newList"
-                  v-on:reorderList="reorderList"
-                />
-              </b-tab>
-            </b-tabs>
+              <b-tabs card v-model="listsIndex">
+                <b-tab title="Current">
+                  <listlist
+                    :lists="activeLists"
+                    v-on:switchList="switchToList"
+                    v-on:newList="newList"
+                    v-on:reorderList="reorderList"
+                  />
+                </b-tab>
+                <b-tab title="Archive">
+                  <listlist
+                    :lists="archiveLists"
+                    v-on:switchList="switchToList"
+                    v-on:newList="newList"
+                    v-on:reorderList="reorderList"
+                  />
+                </b-tab>
+              </b-tabs>
             </b-card>
           </div>
         </div>
@@ -173,5 +179,9 @@ label {
   input[type="checkbox"] {
     margin-right: 5px;
   }
+}
+
+.today-card {
+  margin-bottom: 20px;
 }
 </style>

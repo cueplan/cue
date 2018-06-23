@@ -1,5 +1,5 @@
 <template>
-  <draggable element="b-list-group" v-model="listOrder" :options="{draggable:'.draggable'}" @end="onDragEnd" flush :component-data="{flush: ''}">
+  <draggable element="b-list-group" class="listlist" v-model="listOrder" :options="{draggable:'.draggable'}" @end="onDragEnd" flush :component-data="{flush: ''}">
     <b-list-group-item v-for="(list, index) in listOrder"
       class="draggable"
       :key="index">
