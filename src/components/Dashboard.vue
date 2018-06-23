@@ -25,20 +25,10 @@
             <b-card no-body>
               <b-tabs card v-model="collection">
                 <b-tab title="Current">
-                  <listlist
-                    :lists="activeLists"
-                    v-on:switchList="switchToList"
-                    v-on:newList="newList"
-                    v-on:reorderList="reorderList"
-                  />
+                  <listlist :lists="activeLists"/>
                 </b-tab>
                 <b-tab title="Archive">
-                  <listlist
-                    :lists="archiveLists"
-                    v-on:switchList="switchToList"
-                    v-on:newList="newList"
-                    v-on:reorderList="reorderList"
-                  />
+                  <listlist :lists="archiveLists"/>
                 </b-tab>
               </b-tabs>
             </b-card>
@@ -46,7 +36,7 @@
         </div>
       </b-col>
       <b-col sm>
-        <cuelist v-on:changeListName="changeListName"/>
+        <cuelist/>
       </b-col>
     </b-row>
   </b-container>
@@ -91,35 +81,21 @@ export default {
   mounted () {
     this.$store.dispatch('loadLists')
     .then(() => {
-      this.$store.dispatch('switchPrimaryList', this.$store.state.lists.lists[this.$store.state.lists.collections.active[0]].id)
+      this.switchPrimaryList(this.$store.state.lists.lists[this.$store.state.lists.collections.active[0]].id)
     })
   },
   methods: {
     ...mapActions([
-      'reorderList'
+      'switchPrimaryList'
     ]),
-
-    switchToList (listId) {
-      this.$store.dispatch('switchPrimaryList', listId)
-    },
-
-    newList (collection) {
-      this.$store.dispatch('newList', collection)
-    },
-
-    changeListName (newName) {
-      this.$store.dispatch('changeListName', newName)
-    },
+    ...mapActions('user', [
+      'signOut'
+    ]),
 
     beforeUnload (e) {
       if (!this.$store.state.listsSaved) {
         e.returnValue = "Latest changes haven't been saved. Are you sure?"
       }
-    },
-
-    // account operations
-    signOut () {
-      this.$store.dispatch('user/signOut')
     },
 
     backupData () {

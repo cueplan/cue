@@ -96,10 +96,6 @@ export default new Vuex.Store({
       state.listsSaved = false
     },
 
-    setPrimaryList (state, primaryList) {
-      state.primaryList = primaryList
-    },
-
     newList (state, collection) {
       const listId = Date.now()
       const today = new Date()
@@ -115,6 +111,10 @@ export default new Vuex.Store({
       })
 
       state.listsSaved = false
+    },
+
+    setPrimaryList (state, primaryList) {
+      state.primaryList = primaryList
     },
 
     changeListName (state, newName) {
@@ -203,7 +203,6 @@ export default new Vuex.Store({
     },
 
     reorderList ({ commit, dispatch }, { collection, oldIndex, newIndex }) {
-      console.log(oldIndex, newIndex)
       commit('reorderList', { collection, oldIndex, newIndex })
       debouncedSaveLists(dispatch)
       // TODO: handle dispatch failure (i.e. rollback)
