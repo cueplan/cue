@@ -72,14 +72,14 @@ export default new Vuex.Store({
       if (typeof state.lists.lists === 'undefined' || typeof state.lists.collections === 'undefined') {
         return []
       }
-      return state.lists.collections.active.map(l => state.lists.lists[l].name)
+      return { collection: 'active', lists: state.lists.collections.active.map(l => state.lists.lists[l].name) }
     },
 
     archiveLists: (state) => {
       if (typeof state.lists.lists === 'undefined' || typeof state.lists.collections === 'undefined') {
         return []
       }
-      return state.lists.collections.archive.map(l => state.lists.lists[l].name)
+      return { collection: 'archive', lists: state.lists.collections.archive.map(l => state.lists.lists[l].name) }
     }
   },
 
@@ -108,8 +108,8 @@ export default new Vuex.Store({
       state.collection = collection
     },
 
-    reorderList (state, { oldIndex, newIndex }) {
-      state.lists.collections[state.collection].splice(newIndex, 0, state.lists.collections[state.collection].splice(oldIndex, 1)[0])
+    reorderList (state, { collection, oldIndex, newIndex }) {
+      state.lists.collections[collection].splice(newIndex, 0, state.lists.collections[collection].splice(oldIndex, 1)[0])
       if (state.listIndex > oldIndex && state.listIndex <= newIndex) {
         state.listIndex--
       } else if (state.listIndex >= newIndex && state.listIndex < oldIndex) {
@@ -125,13 +125,13 @@ export default new Vuex.Store({
       state.primaryList = primaryList
     },
 
-    newList (state) {
+    newList (state, collection) {
       const listId = Date.now()
       const today = new Date()
       var listName = today.toLocaleDateString()
 
       state.lists.lists.push({ name: listName, id: listId })
-      state.lists.collections[state.collection].push(state.lists.lists.length - 1)
+      state.lists.collections[collection].push(state.lists.lists.length - 1)
       state.primaryList = automerge.init()
       state.primaryList = automerge.change(state.primaryList, 'New empty list', ll => {
         ll.name = listName
@@ -139,13 +139,13 @@ export default new Vuex.Store({
         ll.todos = [ { id: 0, text: '', status: 'incomplete' } ]
       })
 
-      state.listIndex = state.lists.collections[state.collection].length - 1
+      state.listIndex = state.lists.collections[collection].length - 1
 
       state.listsSaved = false
     },
 
     changeListName (state, newName) {
-      state.lists.lists[state.lists.collections[state.collection][state.listIndex]].name = newName
+      state.lists.lists.find(l => l.id === state.primaryList.id).name = newName
       state.primaryList = automerge.change(state.primaryList, 'Changing list name', ll => {
         ll.name = newName
       })
@@ -235,9 +235,9 @@ export default new Vuex.Store({
       // TODO: handle dispatch failure
     },
 
-    reorderList ({ commit, dispatch }, { oldIndex, newIndex }) {
+    reorderList ({ commit, dispatch }, { collection, oldIndex, newIndex }) {
       console.log(oldIndex, newIndex)
-      commit('reorderList', { oldIndex, newIndex })
+      commit('reorderList', { collection, oldIndex, newIndex })
       debouncedSaveLists(dispatch)
       // TODO: handle dispatch failure (i.e. rollback)
     },
@@ -266,10 +266,10 @@ export default new Vuex.Store({
       })
     },
 
-    newList ({ commit, dispatch }) {
+    newList ({ commit, dispatch }, collection) {
       return (debouncedSavePrimaryList.flush() || Promise.resolve())
       .then(() => {
-        commit('newList')
+        commit('newList', collection)
 
         debouncedSaveLists(dispatch)
         debouncedSavePrimaryList(dispatch)

@@ -23,7 +23,7 @@ export default {
   computed: {
     listOrder: {
       get: function () {
-        return this.lists || []
+        return this.lists.lists || []
       },
       set: function (value) {
         // No setter, the onDragEnd will let the parent Vue update accordingly
@@ -36,11 +36,11 @@ export default {
     },
 
     newList () {
-      this.$emit('newList')
+      this.$emit('newList', this.lists.collection)
     },
 
     onDragEnd (evt) {
-      this.$emit('reorderList', { oldIndex: evt.oldIndex, newIndex: evt.newIndex })
+      this.$emit('reorderList', { collection: this.lists.collection, oldIndex: evt.oldIndex, newIndex: evt.newIndex })
     }
   }
 }

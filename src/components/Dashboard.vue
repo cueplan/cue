@@ -117,8 +117,8 @@ export default {
       this.$store.dispatch('switchPrimaryList', { listIndex, force })
     },
 
-    newList () {
-      this.$store.dispatch('newList')
+    newList (collection) {
+      this.$store.dispatch('newList', collection)
     },
 
     changeListName (newName) {
