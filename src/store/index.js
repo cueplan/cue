@@ -7,7 +7,6 @@ import userModule from './user.js'
 Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
-// const oldStorageFile = 'todolists.json'
 const listsFile = 'lists.json'
 const dataVersionFile = 'version.json'
 
@@ -181,6 +180,20 @@ export default new Vuex.Store({
       })
       .then(() => {
         return dispatch('loadListsVersion2')
+      })
+    },
+
+    initializeLists ({ dispatch, commit }) {
+      commit('loadLists', {
+        lists: [],
+        collections: { active: [], archive: [] }
+      })
+      return dispatch('newList', 'active')
+      .then(() => {
+        return debouncedSaveLists.flush() || Promise.resolve()
+      })
+      .then(() => {
+        return debouncedSavePrimaryList.flush() || Promise.resolve()
       })
     },
 
