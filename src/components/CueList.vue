@@ -3,7 +3,7 @@
     <div slot="header">
       <input id="listNameInput" ref="listNameInput" v-bind:value="primaryList.name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
       <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
-        <b-dropdown-item class="dropdown-item">Placeholder Menu</b-dropdown-item>
+        <b-dropdown-item v-if="isDebug" class="dropdown-item" @click.prevent="decrementListDate">Decrement Date</b-dropdown-item>
       </b-dropdown>
       <small><span class="saving-status">{{ $store.state.listsSaved ? 'Saved' : 'Saving...' }}</span></small>
     </div>
@@ -31,7 +31,7 @@
 <script>
 import SingleTodo from './SingleTodo.vue'
 import draggable from 'vuedraggable'
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'cuelist',
@@ -45,6 +45,9 @@ export default {
     }
   },
   computed: {
+    isDebug: function () {
+      return process.env.NODE_ENV !== 'production'
+    },
     todoOrder: {
       get: function () {
         return this.primaryList.todos || []
@@ -57,6 +60,9 @@ export default {
     ])
   },
   methods: {
+    ...mapActions([
+      'decrementListDate'
+    ]),
     changeListName () {
       this.$store.dispatch('changeListName', this.$refs.listNameInput.value.trim())
     },

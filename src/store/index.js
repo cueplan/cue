@@ -49,6 +49,12 @@ var readFile = function (file) {
   })
 }
 
+var setupDateChangeCheck = lodash.once((dispatch) => {
+  setInterval(() => {
+    dispatch('dateChangeCheck')
+  }, 1000 * 60)
+})
+
 export default new Vuex.Store({
   modules: {
     user: userModule
@@ -77,6 +83,42 @@ export default new Vuex.Store({
         return []
       }
       return { collection: 'archive', lists: state.lists.collections.archive.map(l => { return { name: state.lists.lists[l].name, id: state.lists.lists[l].id } }) }
+    },
+
+    currentDayPlanId: (state) => {
+      if (typeof state.lists.lists === 'undefined' || typeof state.lists.currentDayPlans === 'undefined') {
+        return null
+      }
+      return state.lists.lists[state.lists.currentDayPlans.days[0].list].id
+    },
+
+    currentDayPlanDate: (state) => {
+      if (typeof state.lists.lists === 'undefined' || typeof state.lists.currentDayPlans === 'undefined') {
+        return null
+      }
+      return new Date(state.lists.currentDayPlans.days[0].date)
+    },
+
+    dayPlanIsCurrent: (state, getters) => {
+      if (getters.currentDayPlanDate === null) {
+        return false
+      }
+      var dayPlanDate = getters.currentDayPlanDate
+      var yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      return dayPlanDate > yesterday
+    },
+
+    tomorrowDayPlanId: (state) => {
+      if (typeof state.lists.lists === 'undefined' || typeof state.lists.currentDayPlans === 'undefined' || state.lists.currentDayPlans.days.length < 2) {
+        return null
+      }
+      console.log(state.lists.currentDayPlans.days.length)
+      return state.lists.lists[state.lists.currentDayPlans.days[1].list].id
+    },
+
+    primaryListId: (state) => {
+      return state.primaryList.id
     }
   },
 
@@ -112,6 +154,46 @@ export default new Vuex.Store({
       state.listsSaved = false
     },
 
+    startDayPlan (state) {
+      const listId = Date.now()
+      const today = new Date()
+      var dayToPlan = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+
+      if (typeof state.lists.currentDayPlans === 'undefined') {
+        state.lists.currentDayPlans = { days: [] }
+      } else {
+        var currentPlanDate = new Date(state.lists.currentDayPlans.days[state.lists.currentDayPlans.days.length - 1].date)
+        if (currentPlanDate >= dayToPlan) {
+          dayToPlan.setDate(currentPlanDate.getDate() + 1)
+        }
+      }
+
+      dayToPlan = new Date(dayToPlan.getFullYear(), dayToPlan.getMonth(), dayToPlan.getDate())
+      var listName = dayToPlan.toLocaleDateString()
+
+      state.lists.lists.push({ name: listName, id: listId })
+      state.lists.currentDayPlans.days.push({ list: state.lists.lists.length - 1, date: dayToPlan })
+      state.primaryList = automerge.init()
+      state.primaryList = automerge.change(state.primaryList, 'New empty daily plan', ll => {
+        ll.name = listName
+        ll.id = listId
+        ll.todos = [ { id: 0, text: '', status: 'incomplete' } ]
+        ll.date = dayToPlan
+      })
+
+      state.listsSaved = false
+    },
+
+    dateChange (state) {
+      if (state.lists.currentDayPlans.days.length > 1) {
+        // Move current day plan to archive, and tomorrow day plan to today
+        state.lists.collections.archive.unshift(state.lists.currentDayPlans.days[0].list)
+        state.lists.currentDayPlans.days.splice(0, 1)
+
+        state.listsSaved = false
+      }
+    },
+
     setPrimaryList (state, primaryList) {
       state.primaryList = primaryList
     },
@@ -121,6 +203,22 @@ export default new Vuex.Store({
       state.primaryList = automerge.change(state.primaryList, 'Changing list name', ll => {
         ll.name = newName
       })
+      state.listsSaved = false
+    },
+
+    decrementListDate (state) {
+      var dayPlan = state.lists.currentDayPlans.days.find(l => state.lists.lists[l.list].id === state.primaryList.id)
+      if (dayPlan == null) {
+        return
+      }
+
+      var newDate = new Date(dayPlan.date)
+      newDate.setDate(newDate.getDate() - 1)
+      dayPlan.date = newDate
+      state.primaryList = automerge.change(state.primaryList, 'Decrementing List Date', ll => {
+        ll.date = newDate
+      })
+
       state.listsSaved = false
     },
 
@@ -181,6 +279,10 @@ export default new Vuex.Store({
       .then(() => {
         return dispatch('loadListsVersion2')
       })
+      .then(() => {
+        setupDateChangeCheck(dispatch)
+        return dispatch('dateChangeCheck')
+      })
     },
 
     initializeLists ({ dispatch, commit }) {
@@ -197,13 +299,33 @@ export default new Vuex.Store({
       })
     },
 
-    loadListsVersion2 ({ commit, state }) {
+    loadListsVersion2 ({ dispatch, commit, state }) {
       return state.blockstack.getFile(listsFile, { decrypt: true })
       .then((listsText) => {
         var lists = JSON.parse(listsText || {})
         commit('loadLists', lists)
+        if (typeof lists.currentDayPlans === 'undefined') {
+          return dispatch('startDayPlan')
+          .then(() => {
+            return debouncedSaveLists.flush() || Promise.resolve()
+          })
+          .then(() => {
+            return debouncedSavePrimaryList.flush() || Promise.resolve()
+          })
+        }
         return Promise.resolve()
       })
+    },
+
+    dateChangeCheck ({ dispatch, commit, state, getters }) {
+      if (!getters.dayPlanIsCurrent && state.lists.currentDayPlans.days.length > 1) {
+        // Move current day plan to archive, and tomorrow day plan to today
+        commit('dateChange')
+        if (!state.listsSaved) {
+          return debouncedSaveLists(dispatch)
+        }
+      }
+      return Promise.resolve()
     },
 
     saveLists ({ commit, state }) {
@@ -255,12 +377,36 @@ export default new Vuex.Store({
       // TODO: handle dispatch failure (i.e. rollback)
     },
 
+    startDayPlan ({ commit, dispatch, getters, state }) {
+      return (debouncedSavePrimaryList.flush() || Promise.resolve())
+      .then(() => {
+        commit('startDayPlan')
+
+        if (!getters.dayPlanIsCurrent && state.lists.currentDayPlans.days.length > 1) {
+          // Move current day plan to archive, and tomorrow day plan to today
+          commit('dateChange')
+        }
+
+        debouncedSaveLists(dispatch)
+        debouncedSavePrimaryList(dispatch)
+      })
+      // TODO: handle dispatch failure (i.e. rollback)
+    },
+
     changeListName ({ commit, dispatch }, newName) {
       if (!newName) {
         return Promise.reject()
       }
 
       commit('changeListName', newName)
+
+      debouncedSaveLists(dispatch)
+      debouncedSavePrimaryList(dispatch)
+      // TODO: handle dispatch failure (i.e. rollback)
+    },
+
+    decrementListDate ({ commit, dispatch }) {
+      commit('decrementListDate')
 
       debouncedSaveLists(dispatch)
       debouncedSavePrimaryList(dispatch)

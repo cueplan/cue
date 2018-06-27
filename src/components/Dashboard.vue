@@ -18,9 +18,14 @@
           <div>
             <b-card class="today-card" no-body>
               <b-list-group flush>
-                <b-list-group-item variant="primary"><a href="#">Today's Plan</a></b-list-group-item>
+                <b-list-group-item :variant="currentDayPlanId === primaryListId ? 'primary' : ''">
+                  <a @click.prevent="switchPrimaryList(currentDayPlanId)" href="#">{{ dayPlanIsCurrent ? 'Today\'s' : currentPlanDate }} Plan</a>
+                </b-list-group-item>
+                <b-list-group-item v-if="tomorrowDayPlanId" :variant="tomorrowDayPlanId === primaryListId ? 'primary' : ''">
+                  <a @click.prevent="switchPrimaryList(tomorrowDayPlanId)" href="#">Tomorrow's Plan</a>
+                </b-list-group-item>
               </b-list-group>
-              <b-button variant="link">Plan Tomorrow</b-button>
+              <b-button v-if="!(tomorrowDayPlanId)" variant="link" @click.prevent="startDayPlan">Plan {{ dayPlanIsCurrent ? 'Tomorrow' : 'Today' }}</b-button>
             </b-card>
             <b-card no-body>
               <b-tabs card v-model="collection">
@@ -64,15 +69,24 @@ export default {
     avatarUrl: function () {
       return this.userAvatarUrl || require('../assets/images/avatar-placeholder.png')
     },
+    currentPlanDate: function () {
+      return this.currentDayPlanDate === null ? '' : this.currentDayPlanDate.toLocaleDateString()
+    },
     ...mapState([
-      'lists'
+      'lists',
+      'currentDayPlan'
     ]),
     ...mapGetters('user', [
       'userAvatarUrl'
     ]),
     ...mapGetters([
       'activeLists',
-      'archiveLists'
+      'archiveLists',
+      'currentDayPlanId',
+      'primaryListId',
+      'currentDayPlanDate',
+      'dayPlanIsCurrent',
+      'tomorrowDayPlanId'
     ])
   },
   created () {
@@ -81,12 +95,13 @@ export default {
   mounted () {
     this.$store.dispatch('loadLists')
     .then(() => {
-      this.switchPrimaryList(this.$store.state.lists.lists[this.$store.state.lists.collections.active[0]].id)
+      this.switchPrimaryList(this.currentDayPlanId)
     })
   },
   methods: {
     ...mapActions([
-      'switchPrimaryList'
+      'switchPrimaryList',
+      'startDayPlan'
     ]),
     ...mapActions('user', [
       'signOut'
