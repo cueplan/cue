@@ -14,7 +14,7 @@
 
 <script>
 import draggable from 'vuedraggable'
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'listlist',
@@ -31,9 +31,9 @@ export default {
         // No setter, the onDragEnd will let the parent Vue update accordingly
       }
     },
-    ...mapGetters([
-      'primaryListId'
-    ])
+    primaryListId: function () {
+      return this.$store.getters['primaryList/id']
+    }
   },
   methods: {
     onDragEnd (evt) {

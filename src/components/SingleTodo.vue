@@ -35,7 +35,7 @@ export default {
         return this.todo.text
       },
       set: function (value) {
-        this.$emit('changeTodoText', this.todoId, value)
+        this.$emit('changeTodoText', { todoId: this.todoId, value })
       }
     },
     completed: {
@@ -43,7 +43,7 @@ export default {
         return this.todo.status === 'completed'
       },
       set: function (value) {
-        this.$emit('completeTodo', this.todoId, value)
+        this.$emit('completeTodo', { todoId: this.todoId, value })
       }
     }
   },

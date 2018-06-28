@@ -72,9 +72,11 @@ export default {
     currentPlanDate: function () {
       return this.currentDayPlanDate === null ? '' : this.currentDayPlanDate.toLocaleDateString()
     },
+    primaryListId: function () {
+      return this.$store.getters['primaryList/id']
+    },
     ...mapState([
-      'lists',
-      'currentDayPlan'
+      'isDirty'
     ]),
     ...mapGetters('user', [
       'userAvatarUrl'
@@ -83,7 +85,6 @@ export default {
       'activeLists',
       'archiveLists',
       'currentDayPlanId',
-      'primaryListId',
       'currentDayPlanDate',
       'dayPlanIsCurrent',
       'tomorrowDayPlanId'
@@ -108,7 +109,7 @@ export default {
     ]),
 
     beforeUnload (e) {
-      if (!this.$store.state.listsSaved) {
+      if (this.isDirty) {
         e.returnValue = "Latest changes haven't been saved. Are you sure?"
       }
     },

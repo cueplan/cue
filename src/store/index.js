@@ -3,6 +3,7 @@ import lodash from 'lodash'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import userModule from './user.js'
+import listModule from './list.js'
 
 Vue.use(Vuex)
 
@@ -12,12 +13,8 @@ const dataVersionFile = 'version.json'
 
 var blockstack = require('blockstack')
 
-var debouncedSaveLists = lodash.debounce((dispatch) => {
-  dispatch('saveLists')
-}, 2000, { maxWait: 30000 })
-
-var debouncedSavePrimaryList = lodash.debounce((dispatch) => {
-  dispatch('savePrimaryList')
+var debouncedSave = lodash.debounce((dispatch) => {
+  return dispatch('save')
 }, 2000, { maxWait: 30000 })
 
 var removeObjectIds = function myself (obj) {
@@ -57,7 +54,8 @@ var setupDateChangeCheck = lodash.once((dispatch) => {
 
 export default new Vuex.Store({
   modules: {
-    user: userModule
+    user: userModule,
+    primaryList: listModule
   },
 
   state () {
@@ -66,7 +64,7 @@ export default new Vuex.Store({
       dataVersion: 0,
       lists: {},
       listsSaved: true,
-      primaryList: {}
+      isDirty: false
     }
   },
 
@@ -117,19 +115,41 @@ export default new Vuex.Store({
       return state.lists.lists[state.lists.currentDayPlans.days[1].list].id
     },
 
-    primaryListId: (state) => {
-      return state.primaryList.id
+    nextPlanDate: (state) => () => {
+      const today = new Date()
+      var dayToPlan = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+
+      if (!(typeof state.lists.currentDayPlans === 'undefined')) {
+        var currentPlanDate = new Date(state.lists.currentDayPlans.days[state.lists.currentDayPlans.days.length - 1].date)
+        if (currentPlanDate >= dayToPlan) {
+          dayToPlan.setDate(currentPlanDate.getDate() + 1)
+        }
+      }
+
+      return new Date(dayToPlan.getFullYear(), dayToPlan.getMonth(), dayToPlan.getDate())
     }
   },
 
   mutations: {
-    loadLists (state, lists) {
-      state.lists = lists
-      state.listsSaved = true
+    setDirty (state, value) {
+      state.isDirty = value
     },
 
     setListsSaved (state, value) {
       state.listsSaved = value
+    },
+
+    initializeLists (state) {
+      state.lists = {
+        lists: [],
+        collections: { active: [], archive: [] }
+      }
+      state.listsSaved = false
+    },
+
+    loadLists (state, lists) {
+      state.lists = lists
+      state.listsSaved = true
     },
 
     reorderList (state, { collection, oldIndex, newIndex }) {
@@ -137,50 +157,18 @@ export default new Vuex.Store({
       state.listsSaved = false
     },
 
-    newList (state, collection) {
-      const listId = Date.now()
-      const today = new Date()
-      var listName = today.toLocaleDateString()
-
-      state.lists.lists.push({ name: listName, id: listId })
+    newList (state, { id, name, collection }) {
+      state.lists.lists.push({ name: name, id: id })
       state.lists.collections[collection].push(state.lists.lists.length - 1)
-      state.primaryList = automerge.init()
-      state.primaryList = automerge.change(state.primaryList, 'New empty list', ll => {
-        ll.name = listName
-        ll.id = listId
-        ll.todos = [ { id: 0, text: '', status: 'incomplete' } ]
-      })
-
       state.listsSaved = false
     },
 
-    startDayPlan (state) {
-      const listId = Date.now()
-      const today = new Date()
-      var dayToPlan = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-
+    startDayPlan (state, { id, name, date }) {
       if (typeof state.lists.currentDayPlans === 'undefined') {
         state.lists.currentDayPlans = { days: [] }
-      } else {
-        var currentPlanDate = new Date(state.lists.currentDayPlans.days[state.lists.currentDayPlans.days.length - 1].date)
-        if (currentPlanDate >= dayToPlan) {
-          dayToPlan.setDate(currentPlanDate.getDate() + 1)
-        }
       }
-
-      dayToPlan = new Date(dayToPlan.getFullYear(), dayToPlan.getMonth(), dayToPlan.getDate())
-      var listName = dayToPlan.toLocaleDateString()
-
-      state.lists.lists.push({ name: listName, id: listId })
-      state.lists.currentDayPlans.days.push({ list: state.lists.lists.length - 1, date: dayToPlan })
-      state.primaryList = automerge.init()
-      state.primaryList = automerge.change(state.primaryList, 'New empty daily plan', ll => {
-        ll.name = listName
-        ll.id = listId
-        ll.todos = [ { id: 0, text: '', status: 'incomplete' } ]
-        ll.date = dayToPlan
-      })
-
+      state.lists.lists.push({ name, id })
+      state.lists.currentDayPlans.days.push({ list: state.lists.lists.length - 1, date })
       state.listsSaved = false
     },
 
@@ -194,74 +182,43 @@ export default new Vuex.Store({
       }
     },
 
-    setPrimaryList (state, primaryList) {
-      state.primaryList = primaryList
-    },
-
-    changeListName (state, newName) {
-      state.lists.lists.find(l => l.id === state.primaryList.id).name = newName
-      state.primaryList = automerge.change(state.primaryList, 'Changing list name', ll => {
-        ll.name = newName
-      })
+    changeListName (state, { listId, name }) {
+      state.lists.lists.find(l => l.id === listId).name = name
       state.listsSaved = false
     },
 
-    decrementListDate (state) {
-      var dayPlan = state.lists.currentDayPlans.days.find(l => state.lists.lists[l.list].id === state.primaryList.id)
+    changeListDate (state, { listId, date }) {
+      var dayPlan = state.lists.currentDayPlans.days.find(l => state.lists.lists[l.list].id === listId)
       if (dayPlan == null) {
         return
       }
 
-      var newDate = new Date(dayPlan.date)
-      newDate.setDate(newDate.getDate() - 1)
-      dayPlan.date = newDate
-      state.primaryList = automerge.change(state.primaryList, 'Decrementing List Date', ll => {
-        ll.date = newDate
-      })
-
-      state.listsSaved = false
-    },
-
-    deleteTodo (state, todoId) {
-      state.primaryList = automerge.change(state.primaryList, 'Delete a todo', ll => {
-        ll.todos.splice(todoId, 1)
-        if (ll.todos.length === 0) {
-          ll.todos.splice(0, 0, { id: 0, text: '', status: 'incomplete' })
-        }
-      })
-      state.listsSaved = false
-    },
-
-    completeTodo (state, { todoId, value }) {
-      state.primaryList = automerge.change(state.primaryList, 'Complete a todo', ll => {
-        ll.todos[todoId].status = value ? 'completed' : 'incomplete'
-      })
-      state.listsSaved = false
-    },
-
-    changeTodoText (state, { todoId, value }) {
-      state.primaryList = automerge.change(state.primaryList, 'Change todo text', ll => {
-        ll.todos[todoId].text = value
-      })
-      state.listsSaved = false
-    },
-
-    insertTodoAfter (state, { todoId, value }) {
-      state.primaryList = automerge.change(state.primaryList, 'Insert todo', ll => {
-        ll.todos.splice(todoId + 1, 0, { id: ll.todos.length + 1, text: value || '', status: 'incomplete' })
-      })
-      state.listsSaved = false
-    },
-
-    reorderTodos (state, { oldIndex, newIndex }) {
-      state.primaryList = automerge.change(state.primaryList, 'Moving a todo', ll => {
-        ll.todos.splice(newIndex, 0, ll.todos.splice(oldIndex, 1)[0])
-      })
+      dayPlan.date = date
       state.listsSaved = false
     }
   },
 
   actions: {
+    dirty ({ commit, dispatch }) {
+      commit('setDirty', true)
+      debouncedSave(dispatch)
+    },
+
+    forceSave () {
+      return debouncedSave.flush() || Promise.resolve()
+    },
+
+    save ({ commit, dispatch }) {
+      return dispatch('saveLists')
+      .then(() => {
+        return dispatch('primaryList/saveList')
+      })
+      .then(() => {
+        commit('setDirty', false)
+        return Promise.resolve()
+      })
+    },
+
     // Meta specific
     loadLists ({ dispatch, state }) {
       return state.blockstack.getFile(dataVersionFile, {decrypt: false})
@@ -286,16 +243,10 @@ export default new Vuex.Store({
     },
 
     initializeLists ({ dispatch, commit }) {
-      commit('loadLists', {
-        lists: [],
-        collections: { active: [], archive: [] }
-      })
-      return dispatch('newList', 'active')
+      commit('initializeLists')
+      return dispatch('startDayPlan')
       .then(() => {
-        return debouncedSaveLists.flush() || Promise.resolve()
-      })
-      .then(() => {
-        return debouncedSavePrimaryList.flush() || Promise.resolve()
+        return dispatch('forceSave')
       })
     },
 
@@ -307,10 +258,7 @@ export default new Vuex.Store({
         if (typeof lists.currentDayPlans === 'undefined') {
           return dispatch('startDayPlan')
           .then(() => {
-            return debouncedSaveLists.flush() || Promise.resolve()
-          })
-          .then(() => {
-            return debouncedSavePrimaryList.flush() || Promise.resolve()
+            return dispatch('forceSave')
           })
         }
         return Promise.resolve()
@@ -322,14 +270,17 @@ export default new Vuex.Store({
         // Move current day plan to archive, and tomorrow day plan to today
         commit('dateChange')
         if (!state.listsSaved) {
-          return debouncedSaveLists(dispatch)
+          return dispatch('dirty')
         }
       }
       return Promise.resolve()
     },
 
     saveLists ({ commit, state }) {
-      commit('setListsSaved', false)
+      if (state.listsSaved) {
+        return Promise.resolve()
+      }
+
       return state.blockstack.putFile(listsFile, JSON.stringify(state.lists), { encrypt: true })
       .then(() => {
         commit('setListsSaved', true)
@@ -339,120 +290,55 @@ export default new Vuex.Store({
 
     reorderList ({ commit, dispatch }, { collection, oldIndex, newIndex }) {
       commit('reorderList', { collection, oldIndex, newIndex })
-      debouncedSaveLists(dispatch)
-      // TODO: handle dispatch failure (i.e. rollback)
+      return dispatch('dirty')
     },
 
-    // List + meta
-    switchPrimaryList ({ commit, state }, listId) {
-      if (state.primaryList !== null && state.primaryList.id === listId) {
+    switchPrimaryList ({ dispatch, getters }, listId) {
+      if (getters['primaryList/id'] === listId) {
         return Promise.resolve()
       }
-
-      return (debouncedSavePrimaryList.flush() || Promise.resolve())
-      .then(() => {
-        if (listId === -1) {
-          return Promise.reject()
-        }
-        return state.blockstack.getFile('/lists/' + listId + '.json', { decrypt: true })
-      })
-      .then((contents) => {
-        var primaryList = automerge.load(contents) || automerge.init()
-        commit('setPrimaryList', primaryList)
-        return Promise.resolve()
-      })
-      .catch((error) => {
-        console.log(error)
-      })
+      return dispatch('primaryList/load', listId)
     },
 
-    newList ({ commit, dispatch }, collection) {
-      return (debouncedSavePrimaryList.flush() || Promise.resolve())
-      .then(() => {
-        commit('newList', collection)
+    newList ({ commit, dispatch, getters }, collection) {
+      var name = new Date().toLocaleDateString()
 
-        debouncedSaveLists(dispatch)
-        debouncedSavePrimaryList(dispatch)
+      return dispatch('primaryList/newList', { name, date: null })
+      .then(() => {
+        commit('newList', { id: getters['primaryList/id'], name, collection })
+        return dispatch('dirty')
       })
-      // TODO: handle dispatch failure (i.e. rollback)
     },
 
     startDayPlan ({ commit, dispatch, getters, state }) {
-      return (debouncedSavePrimaryList.flush() || Promise.resolve())
+      var date = getters.nextPlanDate()
+      var name = date.toLocaleDateString()
+      return dispatch('primaryList/newList', { name, listDate: date })
       .then(() => {
-        commit('startDayPlan')
-
+        commit('startDayPlan', { id: getters['primaryList/id'], name, date })
         if (!getters.dayPlanIsCurrent && state.lists.currentDayPlans.days.length > 1) {
           // Move current day plan to archive, and tomorrow day plan to today
           commit('dateChange')
         }
-
-        debouncedSaveLists(dispatch)
-        debouncedSavePrimaryList(dispatch)
+        return dispatch('dirty')
       })
-      // TODO: handle dispatch failure (i.e. rollback)
     },
 
-    changeListName ({ commit, dispatch }, newName) {
-      if (!newName) {
+    changeListName ({ commit, dispatch }, {listId, name}) {
+      if (!name) {
         return Promise.reject()
       }
 
-      commit('changeListName', newName)
-
-      debouncedSaveLists(dispatch)
-      debouncedSavePrimaryList(dispatch)
-      // TODO: handle dispatch failure (i.e. rollback)
+      commit('changeListName', { listId, name })
+      return dispatch('dirty')
     },
 
-    decrementListDate ({ commit, dispatch }) {
-      commit('decrementListDate')
-
-      debouncedSaveLists(dispatch)
-      debouncedSavePrimaryList(dispatch)
-      // TODO: handle dispatch failure (i.e. rollback)
+    changeListDate ({ commit, dispatch }, { listId, date }) {
+      commit('changeListDate', { listId, date })
+      return dispatch('dirty')
     },
 
     // List specific
-    savePrimaryList ({ commit, state }) {
-      commit('setListsSaved', false)
-      return state.blockstack.putFile('/lists/' + state.primaryList.id + '.json', automerge.save(state.primaryList), { encrypt: true })
-      .then(() => {
-        commit('setListsSaved', true)
-        return Promise.resolve()
-      })
-    },
-
-    deleteTodo ({ commit, dispatch }, todoId) {
-      commit('deleteTodo', todoId)
-      debouncedSavePrimaryList(dispatch)
-      // TODO: handle dispatch failure (i.e. rollback)
-    },
-
-    completeTodo ({ commit, dispatch }, { todoId, value }) {
-      commit('completeTodo', { todoId, value })
-      debouncedSavePrimaryList(dispatch)
-      // TODO: handle dispatch failure (i.e. rollback)
-    },
-
-    changeTodoText ({ commit, dispatch }, { todoId, value }) {
-      commit('changeTodoText', { todoId, value })
-      debouncedSavePrimaryList(dispatch)
-      // TODO: handle dispatch failure (i.e. rollback)
-    },
-
-    insertTodoAfter ({ commit, dispatch }, todoId) {
-      commit('insertTodoAfter', todoId)
-      debouncedSavePrimaryList(dispatch)
-      // TODO: handle dispatch failure (i.e. rollback)
-    },
-
-    reorderTodos ({ commit, dispatch }, { oldIndex, newIndex }) {
-      commit('reorderTodos', { oldIndex, newIndex })
-      debouncedSavePrimaryList(dispatch)
-      // TODO: handle dispatch failure (i.e. rollback)
-    },
-
     // Backup/Restore
     backupData ({ dispatch, state }) {
       var listsToBackup = []

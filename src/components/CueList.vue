@@ -1,11 +1,11 @@
 <template>
-  <b-card v-if="primaryList" class="page-header" no-body>
+  <b-card v-if="isLoaded" class="page-header" no-body>
     <div slot="header">
-      <input id="listNameInput" ref="listNameInput" v-bind:value="primaryList.name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
+      <input id="listNameInput" ref="listNameInput" v-bind:value="name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
       <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
-        <b-dropdown-item v-if="isDebug" class="dropdown-item" @click.prevent="decrementListDate">Decrement Date</b-dropdown-item>
+        <b-dropdown-item v-if="isDebug" class="dropdown-item" @click.prevent="decrementDate">Decrement Date</b-dropdown-item>
       </b-dropdown>
-      <small><span class="saving-status">{{ $store.state.listsSaved ? 'Saved' : 'Saving...' }}</span></small>
+      <small><span class="saving-status">{{ isDirty ? 'Saving...' : 'Saved' }}</span></small>
     </div>
 
     <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable', handle:'.handle'}" @end="onDragEnd">
@@ -18,7 +18,7 @@
         v-on:deleteTodo="deleteTodo"
         v-on:completeTodo="completeTodo"
         v-on:changeTodoText="changeTodoText"
-        v-on:insertAfter="insertTodoAfter"
+        v-on:insertAfter="insertTodoAfterAndFocus"
         v-on:todoBlurred="todoBlurred"
         v-on:todoFocused="todoFocused"
         v-on:focusPrev="focusPrevTodo"
@@ -31,7 +31,7 @@
 <script>
 import SingleTodo from './SingleTodo.vue'
 import draggable from 'vuedraggable'
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'cuelist',
@@ -50,48 +50,42 @@ export default {
     },
     todoOrder: {
       get: function () {
-        return this.primaryList.todos || []
+        return this.todos || []
       },
       set: function (value) {
       }
     },
     ...mapState([
-      'primaryList'
+      'isDirty'
+    ]),
+    ...mapState('primaryList', [
+      'isLoaded'
+    ]),
+    ...mapGetters('primaryList', [
+      'name',
+      'todos'
     ])
   },
   methods: {
-    ...mapActions([
-      'decrementListDate'
+    ...mapActions('primaryList', [
+      'decrementDate',
+      'changeName',
+      'deleteTodo',
+      'completeTodo',
+      'changeTodoText',
+      'insertTodoAfter',
+      'reorderTodos'
     ]),
-    changeListName () {
-      this.$store.dispatch('changeListName', this.$refs.listNameInput.value.trim())
-    },
 
-    deleteTodo (todoId) {
-      this.$store.dispatch('deleteTodo', todoId)
-    },
-
-    completeTodo (todoId, value) {
-      this.$store.dispatch('completeTodo', { todoId, value })
-    },
-
-    changeTodoText (todoId, value) {
-      this.$store.dispatch('changeTodoText', { todoId, value })
-    },
-
-    insertTodoAfter (todoId, value) {
-      this.$store.dispatch('insertTodoAfter', { todoId, value })
+    insertTodoAfterAndFocus (todoId, value) {
+      this.insertTodoAfter({ todoId, value })
 
       this.pendingFocusId = todoId + 1
       this.focusedId = todoId + 1
     },
 
-    reorderTodos (oldIndex, newIndex) {
-      this.$store.dispatch('reorderTodos', {oldIndex, newIndex})
-    },
-
     onDragEnd (evt) {
-      this.reorderTodos(evt.oldIndex, evt.newIndex)
+      this.reorderTodos({ oldIndex: evt.oldIndex, newIndex: evt.newIndex })
     },
 
     // UI
@@ -109,7 +103,7 @@ export default {
     },
 
     focusNextTodo (todoId) {
-      this.pendingFocusId = this.focusedId = Math.min(todoId + 1, this.primaryList.todos.length - 1)
+      this.pendingFocusId = this.focusedId = Math.min(todoId + 1, this.todos.length - 1)
     },
 
     editListNameKeyUp (e) {
@@ -118,7 +112,7 @@ export default {
     },
 
     editListNameBlur (e) {
-      this.changeListName()
+      this.changeName(this.$refs.listNameInput.value.trim())
     }
   }
 }
