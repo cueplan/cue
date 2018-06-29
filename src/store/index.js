@@ -189,11 +189,11 @@ export default new Vuex.Store({
 
     changeListDate (state, { listId, date }) {
       var dayPlan = state.lists.currentDayPlans.days.find(l => state.lists.lists[l.list].id === listId)
-      if (dayPlan == null) {
+      if (dayPlan === null) {
         return
       }
 
-      dayPlan.date = date
+      dayPlan.date = date.toISOString()
       state.listsSaved = false
     }
   },
@@ -313,7 +313,7 @@ export default new Vuex.Store({
     startDayPlan ({ commit, dispatch, getters, state }) {
       var date = getters.nextPlanDate()
       var name = date.toLocaleDateString()
-      return dispatch('primaryList/newList', { name, listDate: date })
+      return dispatch('primaryList/newList', { name, date })
       .then(() => {
         commit('startDayPlan', { id: getters['primaryList/id'], name, date })
         if (!getters.dayPlanIsCurrent && state.lists.currentDayPlans.days.length > 1) {

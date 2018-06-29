@@ -44,7 +44,10 @@ const listModule = {
       state.isSaved = value
     },
 
-    newList (state, { name, date }) {
+    newList (state, listInfo) {
+      var name = listInfo.name
+      var date = listInfo.date ? listInfo.date.toISOString() : null
+
       const listId = Date.now()
       state.list = automerge.change(automerge.init(), 'New empty list', ll => {
         ll.name = name
@@ -71,7 +74,7 @@ const listModule = {
 
     setDate (state, date) {
       state.list = automerge.change(state.list, 'Changing list date', ll => {
-        ll.date = date
+        ll.date = date.toISOString()
       })
       state.isSaved = false
     },
@@ -131,6 +134,7 @@ const listModule = {
     newList ({ commit, dispatch, state }, { name, date }) {
       return (!state.isSaved ? dispatch('forceSave', null, { root: true }) : Promise.resolve())
       .then(() => {
+        console.log(date)
         commit('newList', { name, date })
         return dispatch('dirty', null, { root: true })
       })
@@ -164,10 +168,10 @@ const listModule = {
 
     decrementDate ({ commit, dispatch, state }) {
       if (typeof state.list.date === 'undefined' || state.list.date === null) {
-        return Promise.reject()
+        console.error('decrementing date of undated list')
       }
 
-      var newDate = new Date(state.list.date)
+      var newDate = new Date(state.list.date || new Date())
       newDate.setDate(newDate.getDate() - 1)
 
       return dispatch('changeListDate', { listId: state.list.id, date: newDate }, { root: true })

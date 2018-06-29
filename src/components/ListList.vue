@@ -7,7 +7,7 @@
       <a @click.prevent="switchPrimaryList(list.id)" href="#">{{ list.name }}</a>
     </b-list-group-item>
     <b-list-group-item slot="footer" class="new-list-item">
-      <a @click.prevent="newList" href="#">+ New List</a>
+      <a @click.prevent="newList(lists.collection)" href="#">+ New List</a>
     </b-list-group-item>
   </draggable>
 </template>
