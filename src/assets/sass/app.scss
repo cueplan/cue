@@ -97,6 +97,10 @@ body, #app {
   background-color: white;
 }
 
+.title-input[readonly] {
+  background-color: transparent;
+}
+
 .title-label {
   margin: 5px 3px 9px;
   padding-top: 5px;

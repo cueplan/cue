@@ -159,6 +159,10 @@ const listModule = {
         return Promise.reject()
       }
 
+      if (newName === state.list.name) {
+        return Promise.resolve()
+      }
+
       return dispatch('changeListName', { listId: state.list.id, name: newName }, { root: true })
       .then(() => {
         commit('changeName', newName)

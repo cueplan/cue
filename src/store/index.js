@@ -64,7 +64,8 @@ export default new Vuex.Store({
       dataVersion: 0,
       lists: {},
       listsSaved: true,
-      isDirty: false
+      isDirty: false,
+      currentDate: new Date()
     }
   },
 
@@ -102,7 +103,7 @@ export default new Vuex.Store({
         return false
       }
       var dayPlanDate = getters.currentDayPlanDate
-      var yesterday = new Date()
+      var yesterday = new Date(state.currentDate)
       yesterday.setDate(yesterday.getDate() - 1)
       return dayPlanDate > yesterday
     },
@@ -115,8 +116,8 @@ export default new Vuex.Store({
       return state.lists.lists[state.lists.currentDayPlans.days[1].list].id
     },
 
-    nextPlanDate: (state) => () => {
-      const today = new Date()
+    nextPlanDate: (state) => {
+      const today = new Date(state.currentDate)
       var dayToPlan = new Date(today.getFullYear(), today.getMonth(), today.getDate())
 
       if (!(typeof state.lists.currentDayPlans === 'undefined')) {
@@ -266,6 +267,14 @@ export default new Vuex.Store({
     },
 
     dateChangeCheck ({ dispatch, commit, state, getters }) {
+      console.log('date check')
+      var yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      if (state.currentDate < yesterday) {
+        var today = new Date()
+        state.currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      }
+
       if (!getters.dayPlanIsCurrent && state.lists.currentDayPlans.days.length > 1) {
         // Move current day plan to archive, and tomorrow day plan to today
         commit('dateChange')
@@ -301,7 +310,7 @@ export default new Vuex.Store({
     },
 
     newList ({ commit, dispatch, getters }, collection) {
-      var name = new Date().toLocaleDateString()
+      var name = 'Untitled List'
 
       return dispatch('primaryList/newList', { name, date: null })
       .then(() => {
@@ -311,7 +320,7 @@ export default new Vuex.Store({
     },
 
     startDayPlan ({ commit, dispatch, getters, state }) {
-      var date = getters.nextPlanDate()
+      var date = getters.nextPlanDate
       var name = date.toLocaleDateString()
       return dispatch('primaryList/newList', { name, date })
       .then(() => {

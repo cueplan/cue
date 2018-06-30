@@ -1,7 +1,7 @@
 <template>
   <b-card v-if="isLoaded" class="page-header" no-body>
     <div slot="header">
-      <input id="listNameInput" ref="listNameInput" v-bind:value="name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
+      <input id="listNameInput" ref="listNameInput" :readonly="!!date" v-bind:value="name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
       <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
         <b-dropdown-item v-if="isDebug" class="dropdown-item" @click.prevent="decrementDate">Decrement Date</b-dropdown-item>
       </b-dropdown>
@@ -63,7 +63,8 @@ export default {
     ]),
     ...mapGetters('primaryList', [
       'name',
-      'todos'
+      'todos',
+      'date'
     ])
   },
   methods: {
