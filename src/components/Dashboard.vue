@@ -13,16 +13,17 @@
               <b-dropdown-item @click.prevent="backupData">Backup Data</b-dropdown-item>
               <b-dropdown-item @click.prevent="$refs.restoreinput.click()">Restore From Backup ...</b-dropdown-item>
               <input type="file" ref="restoreinput" id="restoreinput" accept=".json" v-on:change="restoreBackup"/>
+              <b-dropdown-item v-if="isDebug" @click.prevent="debugAction">Debug Action</b-dropdown-item>
             </b-dropdown>
           </div>
           <div>
             <b-card class="today-card" no-body>
               <b-list-group flush>
                 <b-list-group-item :variant="currentDayPlanId === primaryListId ? 'primary' : ''">
-                  <a @click.prevent="switchPrimaryList(currentDayPlanId)" href="#">{{ dayPlanIsCurrent ? 'Today\'s' : currentPlanDate }} Plan</a>
+                  <a @click.prevent="switchList({ namespace: 'primaryList', listId: currentDayPlanId })" href="#">{{ $store.getters.currentDayPlanName }}</a>
                 </b-list-group-item>
                 <b-list-group-item v-if="tomorrowDayPlanId" :variant="tomorrowDayPlanId === primaryListId ? 'primary' : ''">
-                  <a @click.prevent="switchPrimaryList(tomorrowDayPlanId)" href="#">Tomorrow's Plan</a>
+                  <a @click.prevent="switchList({ namespace: 'primaryList', listId: tomorrowDayPlanId })" href="#">{{ $store.getters.tomorrowDayPlanName }}</a>
                 </b-list-group-item>
               </b-list-group>
               <b-button v-if="!(tomorrowDayPlanId)" variant="link" @click.prevent="startDayPlan">Plan {{ dayPlanIsCurrent ? 'Tomorrow' : 'Today' }}</b-button>
@@ -41,7 +42,10 @@
         </div>
       </b-col>
       <b-col sm>
-        <cuelist/>
+        <cuelist :namespace="'primaryList'"/>
+      </b-col>
+      <b-col sm v-if="secondaryListLoaded">
+        <cuelist :namespace="'secondaryList'"/>
       </b-col>
     </b-row>
   </b-container>
@@ -66,6 +70,9 @@ export default {
     }
   },
   computed: {
+    isDebug: function () {
+      return process.env.NODE_ENV !== 'production'
+    },
     avatarUrl: function () {
       return this.userAvatarUrl || require('../assets/images/avatar-placeholder.png')
     },
@@ -74,6 +81,9 @@ export default {
     },
     primaryListId: function () {
       return this.$store.getters['primaryList/id']
+    },
+    secondaryListLoaded: function () {
+      return this.$store.state.secondaryList.isLoaded
     },
     ...mapState([
       'isDirty'
@@ -95,14 +105,12 @@ export default {
   },
   mounted () {
     this.$store.dispatch('loadLists')
-    .then(() => {
-      this.switchPrimaryList(this.currentDayPlanId)
-    })
   },
   methods: {
     ...mapActions([
-      'switchPrimaryList',
-      'startDayPlan'
+      'switchList',
+      'startDayPlan',
+      'debugAction'
     ]),
     ...mapActions('user', [
       'signOut'

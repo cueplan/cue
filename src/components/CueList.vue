@@ -1,11 +1,12 @@
 <template>
   <b-card v-if="isLoaded" class="page-header" no-body>
     <div slot="header">
-      <input id="listNameInput" ref="listNameInput" :readonly="!!date" v-bind:value="name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
+      <input id="listNameInput" ref="listNameInput" :readonly="!canChangeName" v-bind:value="name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
       <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
         <b-dropdown-item v-if="isDebug" class="dropdown-item" @click.prevent="decrementDate">Decrement Date</b-dropdown-item>
+        <b-dropdown-item v-if="namespace === 'secondaryList'" class="dropdown-item" @click.prevent="finishDayPlan">Finish Planning</b-dropdown-item>
       </b-dropdown>
-      <small><span class="saving-status">{{ isDirty ? 'Saving...' : 'Saved' }}</span></small>
+      <small><span class="saving-status">{{ isSaved ? 'Saved' : 'Saving...' }}</span></small>
     </div>
 
     <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable', handle:'.handle'}" @end="onDragEnd">
@@ -31,10 +32,11 @@
 <script>
 import SingleTodo from './SingleTodo.vue'
 import draggable from 'vuedraggable'
-import { mapState, mapGetters, mapActions } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'cuelist',
+  props: ['namespace'],
   components: {
     draggable,
     singletodo: SingleTodo },
@@ -55,28 +57,56 @@ export default {
       set: function (value) {
       }
     },
+    isLoaded: function () {
+      return this.$store.state[this.namespace].isLoaded
+    },
+    isSaved: function () {
+      return this.$store.state[this.namespace].isSaved
+    },
+    name: function () {
+      return this.$store.getters[this.namespace + '/name']
+    },
+    todos: function () {
+      return this.$store.getters[this.namespace + '/todos']
+    },
+    canChangeName: function () {
+      return this.$store.getters[this.namespace + '/canChangeName']
+    },
     ...mapState([
       'isDirty'
-    ]),
-    ...mapState('primaryList', [
-      'isLoaded'
-    ]),
-    ...mapGetters('primaryList', [
-      'name',
-      'todos',
-      'date'
     ])
   },
   methods: {
-    ...mapActions('primaryList', [
-      'decrementDate',
-      'changeName',
-      'deleteTodo',
-      'completeTodo',
-      'changeTodoText',
-      'insertTodoAfter',
-      'reorderTodos'
+    ...mapActions([
+      'finishDayPlan'
     ]),
+    decrementDate () {
+      this.$store.dispatch.bind(null, this.namespace + '/decrementDate').apply(null, arguments)
+    },
+
+    changeName () {
+      this.$store.dispatch.bind(null, this.namespace + '/changeName').apply(null, arguments)
+    },
+
+    deleteTodo () {
+      this.$store.dispatch.bind(null, this.namespace + '/deleteTodo').apply(null, arguments)
+    },
+
+    completeTodo () {
+      this.$store.dispatch.bind(null, this.namespace + '/completeTodo').apply(null, arguments)
+    },
+
+    changeTodoText () {
+      this.$store.dispatch.bind(null, this.namespace + '/changeTodoText').apply(null, arguments)
+    },
+
+    insertTodoAfter () {
+      this.$store.dispatch.bind(null, this.namespace + '/insertTodoAfter').apply(null, arguments)
+    },
+
+    reorderTodos () {
+      this.$store.dispatch.bind(null, this.namespace + '/reorderTodos').apply(null, arguments)
+    },
 
     insertTodoAfterAndFocus (todoId, value) {
       this.insertTodoAfter({ todoId, value })

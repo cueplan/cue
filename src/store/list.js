@@ -1,4 +1,5 @@
 import automerge from 'automerge'
+import { planName } from '../helpers/dates.js'
 
 const listModule = {
   namespaced: true,
@@ -13,19 +14,28 @@ const listModule = {
 
   getters: {
     id: (state) => {
+      if (!state.isLoaded) {
+        return null
+      }
       return state.list.id
     },
 
     name: (state) => {
-      return state.list.name
+      if (!state.isLoaded) {
+        return null
+      }
+      return planName(state.list.date, new Date(), state.list.name)
     },
 
     todos: (state) => {
+      if (!state.isLoaded) {
+        return []
+      }
       return state.list.todos || []
     },
 
     date: (state) => {
-      if (typeof state.list.date === 'undefined' || state.list.date === null) {
+      if (!state.isLoaded || typeof state.list.date === 'undefined' || state.list.date === null) {
         return null
       }
       return new Date(state.list.date)
@@ -62,6 +72,11 @@ const listModule = {
     load (state, contents) {
       state.list = automerge.load(contents) || automerge.init()
       state.isLoaded = true
+      state.isSaved = true
+    },
+
+    unload (state) {
+      state.isLoaded = false
       state.isSaved = true
     },
 
@@ -151,6 +166,14 @@ const listModule = {
       })
       .catch((error) => {
         console.log(error)
+      })
+    },
+
+    unload ({ commit, dispatch, state }) {
+      return (!state.isSaved ? dispatch('forceSave', null, { root: true }) : Promise.resolve())
+      .then(() => {
+        commit('unload')
+        return Promise.resolve()
       })
     },
 

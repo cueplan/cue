@@ -4,7 +4,7 @@
       class="draggable"
       :key="list.id"
       :variant="list.id === primaryListId ? 'primary' : ''">
-      <a @click.prevent="switchPrimaryList(list.id)" href="#">{{ list.name }}</a>
+      <a @click.prevent="switchList({ namespace: 'primaryList', listId: list.id })" href="#">{{ list.name }}</a>
     </b-list-group-item>
     <b-list-group-item slot="footer" class="new-list-item">
       <a @click.prevent="newList(lists.collection)" href="#">+ New List</a>
@@ -40,7 +40,7 @@ export default {
       this.reorderList({ collection: this.lists.collection, oldIndex: evt.oldIndex, newIndex: evt.newIndex })
     },
     ...mapActions([
-      'switchPrimaryList',
+      'switchList',
       'newList',
       'reorderList'
     ])
