@@ -1,7 +1,8 @@
 {
   "name": "Cue",
   "start_url": "http://app.cueplan.com",
-  "description": "A decentralized personal planner built on Blockstack",
+  "description": "Personal planning studio",
+  "version": "0.0.2",
   "icons": [{
     "src": "http://app.cueplan.com/logo.png",
     "sizes": "400x400",

@@ -1,7 +1,7 @@
 {
   "name": "cue",
-  "version": "0.0.1",
-  "description": "A decentralized personal planner built on Blockstack",
+  "version": "0.0.2",
+  "description": "Personal planning studio",
   "author": "Rock Hymas <rock@hymasfamily.org>",
   "private": true,
   "scripts": {
