@@ -9,7 +9,12 @@
       <small><span class="saving-status">{{ isSaved ? 'Saved' : 'Saving...' }}</span></small>
     </div>
 
-    <draggable  element="ul" class="list-group" v-model="todoOrder" :options="{draggable:'.draggable', handle:'.handle'}" @end="onDragEnd">
+    <draggable element="ul"
+               class="list-group"
+               v-model="todoOrder"
+               :options="{draggable:'.draggable', handle:'.handle', group: { name: 'tasks', pull: 'clone', revertClone: true } }"
+               @end="onDragEnd"
+               @add="onDragAdd">
       <singletodo
         v-for="(todo, todoId) in todoOrder"
         :todo="todo"
@@ -116,7 +121,13 @@ export default {
     },
 
     onDragEnd (evt) {
-      this.reorderTodos({ oldIndex: evt.oldIndex, newIndex: evt.newIndex })
+      if (evt.from === evt.to) {
+        this.reorderTodos({ oldIndex: evt.oldIndex, newIndex: evt.newIndex })
+      }
+    },
+
+    onDragAdd (evt) {
+      this.$store.dispatch('cloneTodo', { srcIndex: evt.oldIndex, dstIndex: evt.newIndex, dstList: this.namespace })
     },
 
     // UI

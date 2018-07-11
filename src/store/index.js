@@ -422,6 +422,16 @@ export default new Vuex.Store({
       return dispatch('dirty')
     },
 
+    cloneTodo ({ commit, dispatch, state, getters }, { srcIndex, dstIndex, dstList }) {
+      var srcList = 'primaryList'
+      if (dstList === 'primaryList') {
+        srcList = 'secondaryList'
+      }
+
+      var srcTodo = getters[srcList + '/todos'][srcIndex]
+      return dispatch(dstList + '/addTodo', { dstIndex, srcTodo })
+    },
+
     // Backup/Restore
     backupData ({ dispatch, state }) {
       var listsToBackup = []

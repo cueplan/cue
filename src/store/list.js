@@ -130,6 +130,13 @@ const listModule = {
         ll.todos.splice(newIndex, 0, ll.todos.splice(oldIndex, 1)[0])
       })
       state.isSaved = false
+    },
+
+    addTodo (state, { dstIndex, srcTodo }) {
+      state.list = automerge.change(state.list, 'Add todo', ll => {
+        ll.todos.splice(dstIndex, 0, { id: dstIndex, text: srcTodo.text || '', status: 'incomplete' })
+      })
+      state.isSaved = false
     }
   },
 
@@ -230,6 +237,11 @@ const listModule = {
 
     reorderTodos ({ commit, dispatch }, { oldIndex, newIndex }) {
       commit('reorderTodos', { oldIndex, newIndex })
+      return dispatch('dirty', null, { root: true })
+    },
+
+    addTodo ({ commit, dispatch }, { dstIndex, srcTodo }) {
+      commit('addTodo', { dstIndex, srcTodo })
       return dispatch('dirty', null, { root: true })
     }
   }
