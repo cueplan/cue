@@ -2,9 +2,9 @@
   <b-card v-if="isLoaded" class="page-header" no-body>
     <div slot="header">
       <input id="listNameInput" ref="listNameInput" :readonly="!canChangeName" v-bind:value="name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
+      <b-button v-if="namespace === 'secondaryList'" class="done-planning" @click.prevent="finishDayPlan">Finish Planning</b-button>
       <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle">
         <b-dropdown-item v-if="isDebug" class="dropdown-item" @click.prevent="decrementDate">Decrement Date</b-dropdown-item>
-        <b-dropdown-item v-if="namespace === 'secondaryList'" class="dropdown-item" @click.prevent="finishDayPlan">Finish Planning</b-dropdown-item>
       </b-dropdown>
       <small><span class="saving-status">{{ isSaved ? 'Saved' : 'Saving...' }}</span></small>
     </div>
