@@ -18,7 +18,8 @@ export default {
   components: {Landing, Dashboard},
   created () {
     this.signIn()
-    .catch(() => {
+    .catch((err) => {
+      console.log('catching ' + err)
       window.location = window.location.origin
     })
   },

@@ -1,4 +1,3 @@
-import automerge from 'automerge'
 import { planName } from '../helpers/dates.js'
 
 const listModule = {
@@ -8,7 +7,8 @@ const listModule = {
     return {
       list: {},
       isSaved: true,
-      isLoaded: false
+      isLoaded: false,
+      unsubscribe: null
     }
   },
 
@@ -59,18 +59,44 @@ const listModule = {
       var date = listInfo.date ? listInfo.date.toISOString() : null
 
       const listId = Date.now()
-      state.list = automerge.change(automerge.init(), 'New empty list', ll => {
-        ll.name = name
-        ll.id = listId
-        ll.todos = [ { id: 0, text: '', status: 'incomplete' } ]
-        ll.date = date
-      })
+      state.list = {
+        name: name,
+        id: listId,
+        todos: [ { id: 0, text: '', status: 'incomplete' } ],
+        date: date
+      }
       state.isLoaded = true
       state.isSaved = false
     },
 
+    newInstructions (state) {
+      state.list.todos = [
+        { id: 0, text: 'Welcome to Cue!', status: 'incomplete' },
+        { id: 1, text: 'Each line is one entry in a daily plan', status: 'incomplete' },
+        { id: 2, text: 'Each entry can be checked off, moved, or deleted', status: 'incomplete' },
+        { id: 3, text: '', status: 'incomplete' },
+        { id: 4, text: 'Leave a blank line, like the one above, to naturally group things together', status: 'incomplete' },
+        { id: 5, text: '', status: 'incomplete' },
+        { id: 6, text: 'Right now you\'re in planning mode for today (the list to the right)', status: 'incomplete' },
+        { id: 7, text: 'You can drag entries from one day to the next when planning', status: 'incomplete' },
+        { id: 8, text: 'Try it out by dragging the entry below to your plan for today', status: 'incomplete' },
+        { id: 9, text: '', status: 'incomplete' },
+        { id: 10, text: 'Plan tomorrow', status: 'incomplete' },
+        { id: 11, text: '', status: 'incomplete' },
+        { id: 12, text: 'Then fill in the plan for today by adding anything else you\'re going to do', status: 'incomplete' },
+        { id: 13, text: '', status: 'incomplete' },
+        { id: 14, text: 'You can start small, and just list your three most important tasks', status: 'incomplete' },
+        { id: 15, text: '', status: 'incomplete' },
+        { id: 16, text: 'Or flesh out a detailed plan that also lists important appointments, meals, and daily habits.', status: 'incomplete' },
+        { id: 17, text: '', status: 'incomplete' },
+        { id: 18, text: 'Either way, it should only take a few minutes to plan.', status: 'incomplete' },
+        { id: 19, text: '', status: 'incomplete' },
+        { id: 20, text: 'When you are done, click \'Finish Planning\'. These instructions will move to the archive.', status: 'incomplete' }
+      ]
+    },
+
     load (state, contents) {
-      state.list = automerge.load(contents) || automerge.init()
+      state.list = contents || {}
       state.isLoaded = true
       state.isSaved = true
     },
@@ -81,62 +107,50 @@ const listModule = {
     },
 
     changeName (state, newName) {
-      state.list = automerge.change(state.list, 'Changing list name', ll => {
-        ll.name = newName
-      })
+      state.list.name = newName
       state.isSaved = false
     },
 
     setDate (state, date) {
-      state.list = automerge.change(state.list, 'Changing list date', ll => {
-        ll.date = date.toISOString()
-      })
+      state.list.date = date.toISOString()
       state.isSaved = false
     },
 
     deleteTodo (state, todoId) {
-      state.list = automerge.change(state.list, 'Delete a todo', ll => {
-        ll.todos.splice(todoId, 1)
-        if (ll.todos.length === 0) {
-          ll.todos.splice(0, 0, { id: 0, text: '', status: 'incomplete' })
-        }
-      })
+      state.list.todos.splice(todoId, 1)
+      if (state.list.todos.length === 0) {
+        state.list.todos.splice(0, 0, { id: 0, text: '', status: 'incomplete' })
+      }
       state.isSaved = false
     },
 
     completeTodo (state, { todoId, value }) {
-      state.list = automerge.change(state.list, 'Complete a todo', ll => {
-        ll.todos[todoId].status = value ? 'completed' : 'incomplete'
-      })
+      state.list.todos[todoId].status = value ? 'completed' : 'incomplete'
       state.isSaved = false
     },
 
     changeTodoText (state, { todoId, value }) {
-      state.list = automerge.change(state.list, 'Change todo text', ll => {
-        ll.todos[todoId].text = value
-      })
+      state.list.todos[todoId].text = value
       state.isSaved = false
     },
 
     insertTodoAfter (state, { todoId, value }) {
-      state.list = automerge.change(state.list, 'Insert todo', ll => {
-        ll.todos.splice(todoId + 1, 0, { id: ll.todos.length + 1, text: value || '', status: 'incomplete' })
-      })
+      state.list.todos.splice(todoId + 1, 0, { id: state.list.todos.length + 1, text: value || '', status: 'incomplete' })
       state.isSaved = false
     },
 
     reorderTodos (state, { oldIndex, newIndex }) {
-      state.list = automerge.change(state.list, 'Moving a todo', ll => {
-        ll.todos.splice(newIndex, 0, ll.todos.splice(oldIndex, 1)[0])
-      })
+      state.list.todos.splice(newIndex, 0, state.list.todos.splice(oldIndex, 1)[0])
       state.isSaved = false
     },
 
     addTodo (state, { dstIndex, srcTodo }) {
-      state.list = automerge.change(state.list, 'Add todo', ll => {
-        ll.todos.splice(dstIndex, 0, { id: dstIndex, text: srcTodo.text || '', status: 'incomplete' })
-      })
+      state.list.todos.splice(dstIndex, 0, { id: dstIndex, text: srcTodo.text || '', status: 'incomplete' })
       state.isSaved = false
+    },
+
+    unsubscribe (state, unsubscribe) {
+      state.unsubscribe = unsubscribe
     }
   },
 
@@ -146,34 +160,61 @@ const listModule = {
         return Promise.resolve()
       }
 
-      return rootState.blockstack.putFile('/lists/' + state.list.id + '.json', automerge.save(state.list), { encrypt: true })
+      return rootState.api.updateList(state.list.id.toString(), state.list)
       .then(() => {
         commit('setSaved', true)
+        if (state.unsubscribe == null) {
+          var unsubscribe = rootState.api.onListSnapshot(state.list.id.toString(), snapshot => {
+            commit('load', snapshot)
+          })
+
+          commit('unsubscribe', unsubscribe)
+        }
         return Promise.resolve()
       })
     },
 
-    newList ({ commit, dispatch, state }, { name, date }) {
-      return (!state.isSaved ? dispatch('forceSave', null, { root: true }) : Promise.resolve())
-      .then(() => {
-        console.log(date)
-        commit('newList', { name, date })
-        return dispatch('dirty', null, { root: true })
-      })
+    async newList ({ commit, dispatch, state }, { name, date }) {
+      if (!state.isSaved) {
+        await dispatch('forceSave', null, { root: true })
+      }
+
+      if (state.unsubscribe != null) {
+        state.unsubscribe()
+      }
+
+      commit('newList', { name, date })
+      await dispatch('dirty', null, { root: true })
     },
 
-    load ({ commit, dispatch, state, rootState }, listId) {
-      return (!state.isSaved ? dispatch('forceSave', null, { root: true }) : Promise.resolve())
-      .then(() => {
-        return rootState.blockstack.getFile('/lists/' + listId + '.json', { decrypt: true })
+    async newInstructions ({ commit, dispatch, state }) {
+      if (!state.isSaved) {
+        await dispatch('forceSave', null, { root: true })
+      }
+
+      if (state.unsubscribe != null) {
+        state.unsubscribe()
+      }
+
+      commit('newList', { name: 'Instructions', date: null })
+      commit('newInstructions')
+      await dispatch('dirty', null, { root: true })
+    },
+
+    async load ({ commit, dispatch, state, rootState }, listId) {
+      if (!state.isSaved) {
+        await dispatch('forceSave', null, { root: true })
+      }
+
+      if (state.unsubscribe != null) {
+        state.unsubscribe()
+      }
+
+      var unsubscribe = rootState.api.onListSnapshot(listId.toString(), snapshot => {
+        commit('load', snapshot)
       })
-      .then((contents) => {
-        commit('load', contents)
-        return Promise.resolve()
-      })
-      .catch((error) => {
-        console.log(error)
-      })
+
+      commit('unsubscribe', unsubscribe)
     },
 
     unload ({ commit, dispatch, state }) {

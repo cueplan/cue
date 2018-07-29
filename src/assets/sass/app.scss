@@ -5,6 +5,7 @@
 @import "variables";
 @import "node_modules/bootstrap/scss/bootstrap";
 @import 'node_modules/bootstrap-vue/dist/bootstrap-vue';
+@import 'node_modules/firebaseui/dist/firebaseui';
 
 body, #app {
   background-color: $primary;
@@ -30,11 +31,16 @@ body, #app {
   float: right;
 }
 
-.user-toggle {
+.dropdown-toggle {
   padding: 0px 0px;
   margin: 8px;
   color: gray;
   background-color: white;
+  border-radius: 4px;
+}
+
+.dropdown-toggle::after {
+  display:none;
 }
 
 .listlist {
@@ -55,6 +61,11 @@ body, #app {
   border-radius: 0px;
   margin: 5px;
   background-color: transparent;
+  border-radius: 4px;
+}
+
+.list-toggle::after {
+  display:none;
 }
 
 .dropdown-item {
@@ -190,4 +201,87 @@ a {
 
 .todo-row .show .handle {
   color: initial;
+}
+
+#okta-sign-in {
+  margin-top: 0px;
+}
+
+#okta-sign-in.auth-container.main-container {
+  font-family: $font-family-sans-serif;
+}
+
+.okta-sign-in-header {
+  display:none;
+}
+
+#okta-sign-in .button {
+  background-color: $primary;
+  color: white;
+}
+
+#okta-sign-in .button:hover {
+  background-color: $primary;
+  color: white;
+}
+
+#okta-sign-in .o-form-head {
+  color: black;
+}
+
+#okta-sign-in .registration-container .registration-link {
+  color: $primary;
+}
+
+#okta-sign-in .default-custom-button,
+#okta-sign-in .button {
+  background-color: $primary;
+  color: white;
+  border-color: #236725;
+}
+
+#okta-sign-in .default-custom-button:hover,
+#okta-sign-in .button:hover {
+  background-color: #236725;
+  color: white;
+  border-color: $primary;
+}
+
+.firebaseui-container,
+.firebaseui-input,
+.firebaseui-input-invalid,
+.firebaseui-button {
+  font-family: $font-family-sans-serif;
+}
+
+.firebaseui-textfield.mdl-textfield .firebaseui-label::after {
+  background-color: $primary;
+}
+
+.firebaseui-button {
+  text-transform: initial;
+}
+
+.firebaseui-button.mdl-button--colored,
+.firebaseui-button.mdl-button--colored:active,
+.firebaseui-button.mdl-button--colored:focus,
+.firebaseui-button.mdl-button--colored:hover,
+.firebaseui-button.mdl-button--colored:focus:not(:active) {
+  background-color: $primary;
+  outline-color: $primary;
+}
+
+.firebaseui-button.mdl-button--primary,
+.firebaseui-button.mdl-button--primary:active,
+.firebaseui-button.mdl-button--primary:focus,
+.firebaseui-button.mdl-button--primary:hover,
+.firebaseui-button.mdl-button--primary:focus:not(:active) {
+  color: $primary;
+  outline-color: $primary;
+}
+
+.firebaseui-link {
+  color: $primary;
+  text-decoration: underline;
+  outline-color: $primary;
 }

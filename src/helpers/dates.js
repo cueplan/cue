@@ -2,6 +2,9 @@ var planName = function (dateOrString, referenceDate, defaultName) {
   if (typeof dateOrString === 'undefined' || dateOrString === null) {
     return defaultName
   }
+  if (typeof dateOrString.toDate === 'function') {
+    dateOrString = dateOrString.toDate()
+  }
   var date = new Date(dateOrString)
 
   if (referenceDate == null) {
@@ -26,4 +29,9 @@ var planName = function (dateOrString, referenceDate, defaultName) {
   return date.toLocaleDateString() + ' Plan'
 }
 
-export { planName }
+var getTodaysDate = function (date) {
+  var today = date || new Date()
+  return new Date(today.getFullYear(), today.getMonth(), today.getDate())
+}
+
+export { planName, getTodaysDate }

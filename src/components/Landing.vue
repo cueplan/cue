@@ -1,22 +1,18 @@
 <template>
   <div class="hello">
     <div>
-      <img id="logo" src="../assets/images/logo.png" height="256" width="768"/>
-      <button class="btn btn-default" @click.prevent="redirectToSignIn">Sign In With Blockstack</button>
+      <img id="logo" src="../assets/images/logo.png" height="128" width="384"/>
+      <auth/>
     </div>
   </div>
 </template>
 
 <script>
-import { createNamespacedHelpers } from 'vuex'
-
-const { mapActions } = createNamespacedHelpers('user')
+import Auth from './Auth.vue'
 
 export default {
   name: 'landing',
-  methods: mapActions([
-    'redirectToSignIn'
-  ])
+  components: { Auth }
 }
 </script>
 
