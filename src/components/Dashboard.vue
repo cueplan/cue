@@ -5,7 +5,7 @@
         <div class="sidebar">
           <div class="logo">
             <img src="../assets/images/logo.png" height="48" width="144"/>
-            <b-dropdown boundary="viewport" no-caret right class="user-dropdown" toggleClass="user-toggle">
+            <b-dropdown boundary="viewport" no-caret right class="user-dropdown" toggleClass="dropdown-toggle">
               <template slot="button-content">
                 <img :src="avatarUrl" class="avatar"/>
               </template>

@@ -21,24 +21,24 @@ const userModule = {
   },
 
   actions: {
-    redirectToSignIn ({ rootState }) {
-      rootState.blockstack.redirectToSignIn()
+    redirectToSignIn ({ commit, rootState }, useBlockstack) {
+      commit('useBlockstack', useBlockstack, { root: true })
+      rootState.api.redirectToSignIn()
     },
 
-    signIn ({ commit, rootState }) {
-      if (rootState.blockstack.isUserSignedIn()) {
-        var userData = rootState.blockstack.loadUserData()
-        var user = new rootState.blockstack.Person(userData.profile)
-        user.username = userData.username
+    async handlePendingSignIn ({ rootState }) {
+      await rootState.api.handlePendingSignIn()
+    },
+
+    async signIn ({ commit, rootState }) {
+      if (await rootState.api.isUserSignedIn()) {
+        commit('useBlockstack', rootState.api.isUserSignedInWithBlockstack(), { root: true })
+        var user = { username: '', avatarUrl: null }
+        try {
+          user = await rootState.api.getUser()
+        } catch (err) {
+        }
         commit('signIn', user)
-      } else if (rootState.blockstack.isSignInPending()) {
-        return rootState.blockstack.handlePendingSignIn()
-          .then((userData) => {
-            var user = new rootState.blockstack.Person(userData.profile)
-            user.username = userData.username
-            commit('signIn', user)
-            return Promise.resolve()
-          })
       }
 
       return Promise.resolve()
@@ -46,7 +46,7 @@ const userModule = {
 
     signOut ({ commit, rootState }) {
       commit('signOut')
-      rootState.blockstack.signUserOut()
+      rootState.api.signUserOut()
     }
   },
 
@@ -57,7 +57,7 @@ const userModule = {
       }
 
       if (state.user !== null) {
-        return state.user.avatarUrl()
+        return state.user.avatarUrl
       }
 
       return null

@@ -5,14 +5,13 @@ import Vuex from 'vuex'
 import userModule from './user.js'
 import listModule from './list.js'
 import { planName } from '../helpers/dates.js'
+import Api from '../helpers/api.js'
 
 Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
 const listsFile = 'lists.json'
 const dataVersionFile = 'version.json'
-
-var blockstack = require('blockstack')
 
 var debouncedSave = lodash.debounce((dispatch) => {
   return dispatch('save')
@@ -66,7 +65,7 @@ export default new Vuex.Store({
 
   state () {
     return {
-      blockstack: blockstack,
+      api: new Api(),
       dataVersion: 0,
       lists: {},
       listsSaved: true,
@@ -101,7 +100,11 @@ export default new Vuex.Store({
       if (typeof state.lists.lists === 'undefined' || typeof state.lists.currentDayPlans === 'undefined') {
         return null
       }
-      return new Date(state.lists.currentDayPlans.days[0].date)
+      var date = state.lists.currentDayPlans.days[0].date
+      if (date === null) {
+        return null
+      }
+      return new Date(date)
     },
 
     currentDayPlanName: (state) => {
@@ -142,7 +145,7 @@ export default new Vuex.Store({
 
       if (!(typeof state.lists.currentDayPlans === 'undefined')) {
         var currentPlanDate = new Date(state.lists.currentDayPlans.days[state.lists.currentDayPlans.days.length - 1].date)
-        if (currentPlanDate >= dayToPlan) {
+        if (currentPlanDate != null && currentPlanDate >= dayToPlan) {
           dayToPlan.setDate(currentPlanDate.getDate() + 1)
         }
       }
@@ -152,6 +155,10 @@ export default new Vuex.Store({
   },
 
   mutations: {
+    useBlockstack (state, value) {
+      state.api.useBlockstack = value
+    },
+
     setDirty (state, value) {
       state.isDirty = value
     },
@@ -228,6 +235,16 @@ export default new Vuex.Store({
       state.listsSaved = false
     },
 
+    createInstructions (state, { id, name }) {
+      if (typeof state.lists.currentDayPlans === 'undefined') {
+        state.lists.currentDayPlans = { days: [] }
+      }
+      state.lists.lists.push({ name, id })
+      state.lists.currentDayPlans.days.push({ list: state.lists.lists.length - 1, date: null })
+      state.lists.currentDayPlans.planning = null
+      state.listsSaved = false
+    },
+
     // Debug
     debugAction (state) {
       var today = new Date()
@@ -260,38 +277,43 @@ export default new Vuex.Store({
     },
 
     // Meta specific
-    loadLists ({ dispatch, state }) {
-      return state.blockstack.getFile(dataVersionFile, {decrypt: false})
-      .then((contents) => {
-        if (contents) {
-          // var dataVersion = JSON.parse(contents || 0)
-          // if (dataVersion < 2) {
-          //   return this.upgradeData()
-          // }
-          return Promise.resolve()
-        } else {
-          return dispatch('initializeLists')
-        }
-      })
-      .then(() => {
-        return dispatch('loadListsVersion2')
-      })
-      .then(() => {
-        setupDateChangeCheck(dispatch)
-        return dispatch('dateChangeCheck')
-      })
+    async loadLists ({ dispatch, state }) {
+      var contents
+      try {
+        contents = await state.api.getFile(dataVersionFile, {decrypt: false})
+      } catch (err) {
+        console.log(err)
+      }
+
+      if (contents) {
+        // var dataVersion = JSON.parse(contents)
+        // if (dataVersion.version < 2) {
+        //   return this.upgradeData()
+        // }
+      } else {
+        await dispatch('initializeLists')
+      }
+
+      await dispatch('loadListsVersion2')
+
+      setupDateChangeCheck(dispatch)
+
+      await dispatch('dateChangeCheck')
     },
 
-    initializeLists ({ dispatch, commit }) {
+    initializeLists ({ dispatch, commit, state }) {
       commit('initializeLists')
       return dispatch('startDayPlan')
       .then(() => {
         return dispatch('forceSave')
       })
+      .then(() => {
+        return state.api.putFile(dataVersionFile, JSON.stringify({ version: 2 }), {encrypt: false})
+      })
     },
 
     loadListsVersion2 ({ dispatch, commit, state, getters }) {
-      return state.blockstack.getFile(listsFile, { decrypt: true })
+      return state.api.getFile(listsFile, { decrypt: true })
       .then((listsText) => {
         var lists = JSON.parse(listsText || {})
         commit('loadLists', lists)
@@ -337,7 +359,7 @@ export default new Vuex.Store({
         return Promise.resolve()
       }
 
-      return state.blockstack.putFile(listsFile, JSON.stringify(state.lists), { encrypt: true })
+      return state.api.putFile(listsFile, JSON.stringify(state.lists), { encrypt: true })
       .then(() => {
         commit('setListsSaved', true)
         return Promise.resolve()
@@ -366,31 +388,33 @@ export default new Vuex.Store({
       })
     },
 
-    startDayPlan ({ commit, dispatch, getters, state }) {
+    async startDayPlan ({ commit, dispatch, getters, state }) {
       var date = getters.nextPlanDate
       var name = planName(date, null, date.toLocaleDateString())
-      return dispatch('secondaryList/newList', { name, date })
-      .then(() => {
-        commit('startDayPlan', { id: getters['secondaryList/id'], name, date })
-        var lastDayPlan = null
-        if (state.lists.currentDayPlans.days.length > 1) {
-          lastDayPlan = state.lists.lists[state.lists.currentDayPlans.days[0].list].id
-          if (!getters.dayPlanIsCurrent) {
-            // Move current day plan to archive, and tomorrow day plan to today
-            commit('shiftDayPlans')
-          }
-        } else {
-          // Make sure the instructions are there
-        }
 
-        if (lastDayPlan == null) {
-          return dispatch('switchList', { namespace: 'primaryList', listId: lastDayPlan })
+      if (typeof state.lists.currentDayPlans === 'undefined' || !state.lists.currentDayPlans.days) {
+        await dispatch('createInstructions')
+      }
+
+      await dispatch('secondaryList/newList', { name, date })
+
+      commit('startDayPlan', { id: getters['secondaryList/id'], name, date })
+      var lastDayPlan = null
+      if (state.lists.currentDayPlans.days.length > 1) {
+        lastDayPlan = state.lists.lists[state.lists.currentDayPlans.days[0].list].id
+        if (!getters.dayPlanIsCurrent) {
+          // Move current day plan to archive, and tomorrow day plan to today
+          commit('shiftDayPlans')
         }
-        return Promise.resolve()
-      })
-      .then(() => {
-        return dispatch('dirty')
-      })
+      } else {
+        console.error('there should always be an old/initial day plan')
+      }
+
+      if (lastDayPlan == null) {
+        await dispatch('switchList', { namespace: 'primaryList', listId: lastDayPlan })
+      }
+
+      await dispatch('dirty')
     },
 
     finishDayPlan ({ commit, dispatch, state }) {
@@ -406,6 +430,11 @@ export default new Vuex.Store({
       .then(() => {
         return dispatch('dirty')
       })
+    },
+
+    async createInstructions ({ commit, dispatch, getters }) {
+      await dispatch('primaryList/newInstructions')
+      commit('createInstructions', { id: getters['primaryList/id'], name: 'Instructions' })
     },
 
     changeListName ({ commit, dispatch }, {listId, name}) {
@@ -459,7 +488,7 @@ export default new Vuex.Store({
       }
 
       var listPath = '/lists/' + lists[0].contents.lists[lists.currentList].id + '.json'
-      return state.blockstack.getFile(listPath, {decrypt: true})
+      return state.api.getFile(listPath, {decrypt: true})
       .then((currentList) => {
         lists.push({
           contents: removeObjectIds(JSON.parse(JSON.stringify(automerge.load(currentList)))),
@@ -494,7 +523,7 @@ export default new Vuex.Store({
           } else {
             contents = JSON.stringify(l.contents)
           }
-          return state.blockstack.putFile(l.path, contents, {encrypt: l.encrypt})
+          return state.api.putFile(l.path, contents, {encrypt: l.encrypt})
         }))
       })
     },

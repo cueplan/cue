@@ -69,6 +69,34 @@ const listModule = {
       state.isSaved = false
     },
 
+    newInstructions (state) {
+      state.list = automerge.change(state.list, 'New instructions list', ll => {
+        ll.todos = [
+          { id: 0, text: 'Welcome to Cue!', status: 'incomplete' },
+          { id: 1, text: 'Each line is one entry in a daily plan', status: 'incomplete' },
+          { id: 2, text: 'Each entry can be checked off, moved, or deleted', status: 'incomplete' },
+          { id: 3, text: '', status: 'incomplete' },
+          { id: 4, text: 'Leave a blank line, like the one above, to naturally group things together', status: 'incomplete' },
+          { id: 5, text: '', status: 'incomplete' },
+          { id: 6, text: 'Right now you\'re in planning mode for today (the list to the right)', status: 'incomplete' },
+          { id: 7, text: 'You can drag entries from one day to the next when planning', status: 'incomplete' },
+          { id: 8, text: 'Try it out by dragging the entry below to your plan for today', status: 'incomplete' },
+          { id: 9, text: '', status: 'incomplete' },
+          { id: 10, text: 'Plan tomorrow', status: 'incomplete' },
+          { id: 11, text: '', status: 'incomplete' },
+          { id: 12, text: 'Then fill in the plan for today by adding anything else you\'re going to do', status: 'incomplete' },
+          { id: 13, text: '', status: 'incomplete' },
+          { id: 14, text: 'You can start small, and just list your three most important tasks', status: 'incomplete' },
+          { id: 15, text: '', status: 'incomplete' },
+          { id: 16, text: 'Or flesh out a detailed plan that also lists important appointments, meals, and daily habits.', status: 'incomplete' },
+          { id: 17, text: '', status: 'incomplete' },
+          { id: 18, text: 'Either way, it should only take a few minutes to plan.', status: 'incomplete' },
+          { id: 19, text: '', status: 'incomplete' },
+          { id: 20, text: 'When you are done, click \'Finish Planning\'. These instructions will move to the archive.', status: 'incomplete' }
+        ]
+      })
+    },
+
     load (state, contents) {
       state.list = automerge.load(contents) || automerge.init()
       state.isLoaded = true
@@ -146,7 +174,7 @@ const listModule = {
         return Promise.resolve()
       }
 
-      return rootState.blockstack.putFile('/lists/' + state.list.id + '.json', automerge.save(state.list), { encrypt: true })
+      return rootState.api.putFile('/lists/' + state.list.id + '.json', automerge.save(state.list), { encrypt: true })
       .then(() => {
         commit('setSaved', true)
         return Promise.resolve()
@@ -162,10 +190,19 @@ const listModule = {
       })
     },
 
+    newInstructions ({ commit, dispatch, state }) {
+      return (!state.isSaved ? dispatch('forceSave', null, { root: true }) : Promise.resolve())
+      .then(() => {
+        commit('newList', { name: 'Instructions', date: null })
+        commit('newInstructions')
+        return dispatch('dirty', null, { root: true })
+      })
+    },
+
     load ({ commit, dispatch, state, rootState }, listId) {
       return (!state.isSaved ? dispatch('forceSave', null, { root: true }) : Promise.resolve())
       .then(() => {
-        return rootState.blockstack.getFile('/lists/' + listId + '.json', { decrypt: true })
+        return rootState.api.getFile('/lists/' + listId + '.json', { decrypt: true })
       })
       .then((contents) => {
         commit('load', contents)
