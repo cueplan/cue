@@ -93,8 +93,12 @@ export default {
       this.$store.dispatch.bind(null, this.namespace + '/changeName').apply(null, arguments)
     },
 
-    deleteTodo () {
+    deleteTodo (todoId, direction) {
       this.$store.dispatch.bind(null, this.namespace + '/deleteTodo').apply(null, arguments)
+      if (direction === 'back') {
+        this.pendingFocusId = Math.max(todoId - 1, 0)
+        this.focusedId = Math.max(todoId - 1, 0)
+      }
     },
 
     completeTodo () {

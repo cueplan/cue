@@ -14,8 +14,9 @@
             class="todo-input"
             v-focus="focus"
             @blur="$emit('todoBlurred', todoId)"
-            @focus="$emit('todoFocused', todoId)"
+            @focus="todoFocused"
             @keyup.enter.prevent="insertAfter(todoId, $event)"
+            @keydown.delete="possibleDelete($event, todoId)"
             @keydown.up.prevent="$emit('focusPrev', todoId)"
             @keydown.down.prevent="$emit('focusNext', todoId)"/>
         </label>
@@ -54,6 +55,23 @@ export default {
 
     insertAfter (todoId, e) {
       this.$emit('insertAfter', todoId)
+    },
+
+    possibleDelete (event, todoId) {
+      if (this.todo.text === '') {
+        event.preventDefault()
+        var direction = event.keyCode === 46 ? 'next' : 'back'
+        this.$emit('deleteTodo', todoId, direction)
+        if (direction === 'next') {
+          this.$nextTick(() => {
+            event.target.setSelectionRange(0, 0)
+          })
+        }
+      }
+    },
+
+    todoFocused (event) {
+      this.$emit('todoFocused', this.todoId)
     }
   }
 }
