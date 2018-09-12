@@ -169,6 +169,15 @@ export default new Vuex.Store({
       }
 
       return new Date(dayToPlan.getFullYear(), dayToPlan.getMonth(), dayToPlan.getDate())
+    },
+
+    primaryListArchivable: (state, getters) => {
+      if (typeof state.lists.collections === 'undefined') {
+        return false
+      }
+      var primaryListId = getters['primaryList/id']
+      var activeIds = state.lists.collections['active'].map((index) => state.lists.lists[index].id)
+      return activeIds.includes(primaryListId)
     }
   },
 
@@ -202,6 +211,12 @@ export default new Vuex.Store({
     newList (state, { id, name, collection }) {
       state.lists.lists.push({ name: name, id: id })
       state.lists.collections[collection].push(state.lists.lists.length - 1)
+      state.listsSaved = false
+    },
+
+    archiveList (state, listId) {
+      var listIndex = state.lists.collections['active'].indexOf(state.lists.lists.findIndex(l => l.id === listId))
+      state.lists.collections['archive'].splice(0, 0, state.lists.collections['active'].splice(listIndex, 1)[0])
       state.listsSaved = false
     },
 
@@ -421,6 +436,11 @@ export default new Vuex.Store({
         commit('newList', { id: getters['primaryList/id'], name, collection })
         return dispatch('dirty')
       })
+    },
+
+    async archiveList ({ commit, dispatch }, listId) {
+      commit('archiveList', listId)
+      return dispatch('dirty')
     },
 
     async startDayPlan ({ commit, dispatch, getters, state }) {

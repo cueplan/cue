@@ -42,7 +42,7 @@
         </div>
       </b-col>
       <b-col sm>
-        <cuelist :namespace="'primaryList'"/>
+        <cuelist :namespace="'primaryList'" :archivable="primaryListArchivable"/>
       </b-col>
       <b-col sm v-if="secondaryListLoaded">
         <cuelist :namespace="'secondaryList'"/>
@@ -97,7 +97,8 @@ export default {
       'currentDayPlanId',
       'currentDayPlanDate',
       'dayPlanIsCurrent',
-      'tomorrowDayPlanId'
+      'tomorrowDayPlanId',
+      'primaryListArchivable'
     ])
   },
   created () {
