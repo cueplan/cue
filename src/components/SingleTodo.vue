@@ -3,10 +3,12 @@
         <b-dropdown text="≡" no-caret class="handle-dropdown" toggleClass="handle" offset="-20">
           <b-dropdown-item class="dropdown-item" @click.prevent="deleteTodo(todoId)">Delete</b-dropdown-item>
         </b-dropdown>
-        <label class="todo-label"
+        <div class="todo-label"
           :class="{completed: todo.completed}">
+          <label>
           <input type="checkbox" class="item-checkbox" v-model="completed"/>
           <span class="checkmark" :id="'todo-'+todoId"></span>
+          </label>
           <input
             type="text"
             v-model="todoText"
@@ -19,7 +21,7 @@
             @keydown.delete="possibleDelete($event, todoId)"
             @keydown.up.prevent="$emit('focusPrev', todoId)"
             @keydown.down.prevent="$emit('focusNext', todoId)"/>
-        </label>
+        </div>
     </div>
 </template>
 
