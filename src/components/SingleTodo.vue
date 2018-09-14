@@ -7,7 +7,7 @@
           :class="{completed: todo.completed}">
           <label>
           <input type="checkbox" class="item-checkbox" v-model="completed"/>
-          <span class="checkmark" :id="'todo-'+todoId"></span>
+          <span class="checkmark" v-bind:class="{ border: todoText }" :id="'todo-'+todoId"></span>
           </label>
           <input
             type="text"
@@ -163,6 +163,10 @@ label {
   border-width: 1px;
   border-color: white;
   transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.checkmark.border {
+  border-color: rgba($primary, .25);
 }
 
 .todo-label:hover input[type="checkbox"] ~ .checkmark {
