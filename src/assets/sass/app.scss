@@ -203,6 +203,35 @@ a {
   color: initial;
 }
 
+.list-group-item .handle {
+  color: rgba($primary, .375);
+  cursor: default;
+}
+
+.list-group-item:hover .handle {
+  color: initial;
+  text-decoration: none;
+}
+
+.list-group-item .handle:focus {
+  color: initial;
+  background-color: transparent;
+}
+
+.list-group-item .handle:active {
+  color: initial;
+  background-color: transparent;
+}
+
+.list-group-item .handle:not(:disabled):active {
+  color: initial;
+  background-color: transparent;
+}
+
+.list-group-item .show .handle {
+  color: initial;
+}
+
 #okta-sign-in {
   margin-top: 0px;
 }
@@ -284,4 +313,8 @@ a {
   color: $primary;
   text-decoration: underline;
   outline-color: $primary;
+}
+
+.listlist .handle {
+  float: right;
 }
