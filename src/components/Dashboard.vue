@@ -2,9 +2,10 @@
   <b-container fluid>
     <b-row>
       <b-col sm="auto">
-        <div class="sidebar">
+        <b-navbar toggleable="sm" type="dark">
           <div class="logo">
             <img src="../assets/images/logo.png" height="48" width="144"/>
+            <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
             <b-dropdown boundary="viewport" no-caret right class="user-dropdown" toggleClass="dropdown-toggle">
               <template slot="button-content">
                 <img :src="avatarUrl" class="avatar"/>
@@ -16,30 +17,34 @@
               <b-dropdown-item v-if="isDebug" @click.prevent="debugAction">Debug Action</b-dropdown-item>
             </b-dropdown>
           </div>
-          <div>
-            <b-card class="today-card" no-body>
-              <b-list-group flush>
-                <b-list-group-item :variant="currentDayPlanId === primaryListId ? 'primary' : ''">
-                  <a @click.prevent="switchList({ namespace: 'primaryList', listId: currentDayPlanId })" href="#">{{ $store.getters.currentDayPlanName }}</a>
-                </b-list-group-item>
-                <b-list-group-item v-if="tomorrowDayPlanId" :variant="tomorrowDayPlanId === primaryListId ? 'primary' : ''">
-                  <a @click.prevent="switchList({ namespace: 'primaryList', listId: tomorrowDayPlanId })" href="#">{{ $store.getters.tomorrowDayPlanName }}</a>
-                </b-list-group-item>
-              </b-list-group>
-              <b-button v-if="!(tomorrowDayPlanId)" variant="link" @click.prevent="startDayPlan">Plan {{ dayPlanIsCurrent ? 'Tomorrow' : 'Today' }}</b-button>
-            </b-card>
-            <b-card no-body>
-              <b-tabs card v-model="collection">
-                <b-tab title="Current">
-                  <listlist :lists="activeLists"/>
-                </b-tab>
-                <b-tab title="Archive">
-                  <listlist :lists="archiveLists"/>
-                </b-tab>
-              </b-tabs>
-            </b-card>
-          </div>
-        </div>
+          <b-collapse is-nav id="nav_collapse">
+            <div class="sidebar">
+              <div>
+                <b-card class="today-card" no-body>
+                  <b-list-group flush>
+                    <b-list-group-item :variant="currentDayPlanId === primaryListId ? 'primary' : ''">
+                      <a @click.prevent="switchList({ namespace: 'primaryList', listId: currentDayPlanId })" href="#">{{ $store.getters.currentDayPlanName }}</a>
+                    </b-list-group-item>
+                    <b-list-group-item v-if="tomorrowDayPlanId" :variant="tomorrowDayPlanId === primaryListId ? 'primary' : ''">
+                      <a @click.prevent="switchList({ namespace: 'primaryList', listId: tomorrowDayPlanId })" href="#">{{ $store.getters.tomorrowDayPlanName }}</a>
+                    </b-list-group-item>
+                  </b-list-group>
+                  <b-button v-if="!(tomorrowDayPlanId)" variant="link" @click.prevent="startDayPlan">Plan {{ dayPlanIsCurrent ? 'Tomorrow' : 'Today' }}</b-button>
+                </b-card>
+                <b-card no-body>
+                  <b-tabs card v-model="collection">
+                    <b-tab title="Current">
+                      <listlist :lists="activeLists"/>
+                    </b-tab>
+                    <b-tab title="Archive">
+                      <listlist :lists="archiveLists"/>
+                    </b-tab>
+                  </b-tabs>
+                </b-card>
+              </div>
+            </div>
+          </b-collapse>
+        </b-navbar>
       </b-col>
       <b-col sm>
         <cuelist :namespace="'primaryList'" :archivable="primaryListArchivable"/>

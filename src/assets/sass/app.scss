@@ -13,6 +13,8 @@ body, #app {
 
 .sidebar {
   flex-direction: column;
+  width: 100%;
+  margin-bottom: 18px;
 }
 
 .logo {
@@ -78,8 +80,10 @@ body, #app {
   white-space: nowrap;
 }
 
-.page-header {
-  margin-top: 18px;
+@media (min-width: 576px) {
+  .page-header {
+    margin-top: 18px;
+  }
 }
 
 .saving-status {
@@ -317,4 +321,22 @@ a {
 
 .listlist .handle {
   float: right;
+}
+
+.navbar {
+  padding: 0px;
+  flex-flow: column;
+}
+
+button:focus {
+  outline-color: white;
+}
+
+.navbar-collapse {
+  width: 100%;
+}
+
+.navbar-toggler {
+  float: right;
+  margin-top: 4px;
 }
