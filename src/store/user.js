@@ -8,6 +8,16 @@ const userModule = {
     }
   },
 
+  getters: {
+    userAvatarUrl: (state) => {
+      if (typeof state.user === 'undefined' || state.user == null) {
+        return null
+      }
+
+      return state.user.avatarUrl
+    }
+  },
+
   mutations: {
     signIn (state, user) {
       state.user = user
@@ -27,6 +37,7 @@ const userModule = {
         try {
           user = await rootState.api.getUser()
         } catch (err) {
+          console.error(err)
         }
         commit('signIn', user)
       } else {
@@ -39,20 +50,6 @@ const userModule = {
     signOut ({ commit, rootState }) {
       commit('signOut')
       rootState.api.signUserOut()
-    }
-  },
-
-  getters: {
-    userAvatarUrl: (state) => {
-      if (typeof state.user === 'undefined') {
-        return null
-      }
-
-      if (state.user !== null) {
-        return state.user.avatarUrl
-      }
-
-      return null
     }
   }
 }
