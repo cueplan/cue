@@ -1,18 +1,9 @@
 <template>
   <b-navbar toggleable="sm" type="dark">
     <div class="logo">
-    <img src="../assets/images/logo.png" height="48" width="144"/>
-    <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
-    <b-dropdown boundary="viewport" no-caret right class="user-dropdown" toggleClass="dropdown-toggle">
-      <template slot="button-content">
-      <img :src="avatarUrl" class="avatar"/>
-      </template>
-      <b-dropdown-item @click.prevent="signOut">Sign Out</b-dropdown-item>
-      <b-dropdown-item @click.prevent="backupData">Backup Data</b-dropdown-item>
-      <b-dropdown-item @click.prevent="$refs.restoreinput.click()">Restore From Backup ...</b-dropdown-item>
-      <input type="file" ref="restoreinput" id="restoreinput" accept=".json" v-on:change="restoreBackup"/>
-      <b-dropdown-item v-if="isDebug" @click.prevent="debugAction">Debug Action</b-dropdown-item>
-    </b-dropdown>
+      <img src="../assets/images/logo.png" height="48" width="144"/>
+      <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
+      <userwidget/>
     </div>
     <b-collapse is-nav id="nav_collapse">
       <div class="sidebar">
@@ -46,6 +37,7 @@
 
 <script>
 import ListList from './ListList.vue'
+import UserWidget from './UserWidget.vue'
 import draggable from 'vuedraggable'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -53,6 +45,7 @@ export default {
   name: 'navbar',
   components: {
     listlist: ListList,
+    userwidget: UserWidget,
     draggable
   },
   data () {
@@ -61,18 +54,9 @@ export default {
     }
   },
   computed: {
-    isDebug: function () {
-      return process.env.NODE_ENV !== 'production'
-    },
-    avatarUrl: function () {
-      return this.userAvatarUrl || require('../assets/images/avatar-placeholder.png')
-    },
     primaryListId: function () {
       return this.$store.getters['primaryList/id']
     },
-    ...mapGetters('user', [
-      'userAvatarUrl'
-    ]),
     ...mapGetters([
       'activeLists',
       'archiveLists',
@@ -87,40 +71,8 @@ export default {
   methods: {
     ...mapActions([
       'switchList',
-      'startDayPlan',
-      'debugAction'
-    ]),
-    ...mapActions('user', [
-      'signOut'
-    ]),
-
-    backupData () {
-      this.$store.dispatch('backupData')
-      .then((backup) => {
-        this.download('backup.json', JSON.stringify(backup))
-      })
-    },
-
-    download (filename, text) {
-      var element = document.createElement('a')
-      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
-      element.setAttribute('download', filename)
-
-      element.style.display = 'none'
-      document.body.appendChild(element)
-
-      element.click()
-
-      document.body.removeChild(element)
-    },
-
-    restoreBackup (e) {
-      // TODO: just reload inside the store, once restoreBackup is complete
-      this.$store.dispatch('restoreBackup', e.target.files[0])
-      .then(() => {
-        window.location.reload()
-      })
-    }
+      'startDayPlan'
+    ])
   }
 }
 </script>
