@@ -18,10 +18,6 @@ export default {
       credentialHelper: firebaseui.auth.CredentialHelper.NONE,
       callbacks: {
         signInSuccessWithAuthResult: function (authResult, redirectUrl) {
-          // User successfully signed in.
-          // Return type determines whether we continue the redirect automatically
-          // or whether we leave that to developer to handle.
-          console.log('sign in success')
           return true
         }
       }
