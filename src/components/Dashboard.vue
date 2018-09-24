@@ -30,7 +30,7 @@ export default {
       'isDirty'
     ]),
     ...mapGetters([
-      'primaryListArchivable'
+      'primaryListArchivable' // TODO: move to store
     ]),
 
     secondaryListLoaded: function () {

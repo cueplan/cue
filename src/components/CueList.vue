@@ -3,7 +3,7 @@
     <div slot="header">
       <input id="listNameInput" ref="listNameInput" :readonly="!canChangeName" v-bind:value="name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
       <b-button v-if="namespace === 'secondaryList'" variant="primary" class="done-planning" @click.prevent="finishDayPlan">Finish Planning</b-button>
-      <b-dropdown boundary="viewport" text="" right no-caret class="list-dropdown" toggleClass="list-toggle dropdown-toggle">
+      <b-dropdown boundary="viewport" text="≡" right no-caret class="list-dropdown" variant="primary" toggleClass="list-toggle dropdown-toggle">
         <b-dropdown-item v-if="archivable" class="dropdown-item" @click.prevent="archive">Archive</b-dropdown-item>
         <b-dropdown-item v-if="isDebug" class="dropdown-item" @click.prevent="decrementDate">Decrement Date</b-dropdown-item>
       </b-dropdown>
