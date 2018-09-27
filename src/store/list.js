@@ -220,6 +220,10 @@ const listModule = {
     unload ({ commit, dispatch, state }) {
       return (!state.isSaved ? dispatch('forceSave', null, { root: true }) : Promise.resolve())
       .then(() => {
+        if (state.unsubscribe != null) {
+          state.unsubscribe()
+        }
+
         commit('unload')
         return Promise.resolve()
       })
