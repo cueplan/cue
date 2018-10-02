@@ -52,4 +52,12 @@ export default class {
   async signUserOut () {
     return this.firebase.signUserOut()
   }
+
+  async getListMetadata () {
+    return this.firebase.getListMetadata()
+  }
+
+  async synchronizeListId (id) {
+    return this.firebase.synchronizeListId(id)
+  }
 }

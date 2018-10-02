@@ -295,8 +295,10 @@ export default new Vuex.Store({
 
     // Debug
     debugAction (state) {
-      var today = new Date()
-      state.currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)
+      // TODO: make this an account recovery command
+      // Read all documents in users lists collection, ignore lists doc and version doc
+      // Put all documents into archive lists, in order of the id. Use name/date/id in lists collection
+      // Leave currentDayPlans alone/empty
     }
   },
 
@@ -331,6 +333,7 @@ export default new Vuex.Store({
         contents = await state.api.getVersion()
       } catch (err) {
         console.error(err)
+        return
       }
 
       if (contents) {
@@ -603,9 +606,36 @@ export default new Vuex.Store({
     },
 
     // Debug
-    debugAction ({ commit, dispatch }) {
-      commit('debugAction')
-      return dispatch('dirty')
+    async debugAction ({ state, commit, dispatch }) {
+      // TODO: make this an account recovery command
+      // Read all documents in users lists collection, ignore lists doc and version doc
+      // Put all documents into archive lists, in order of the id. Use name/date/id in lists collection
+      // Leave currentDayPlans alone/empty
+      var listMeta = await state.api.getListMetadata()
+      var archiveIndices = listMeta.map((value, index) => index)
+      archiveIndices.reverse()
+      var newlists = {
+        lists: listMeta,
+        collections: { active: [], archive: archiveIndices },
+        currentDayPlans: JSON.parse(JSON.stringify(state.lists.currentDayPlans))
+      }
+
+      await Promise.all(listMeta.map(value => {
+        return state.api.synchronizeListId(value.id.toString())
+      }))
+
+      // Preserve current day plans by finding the list id that we used to have and matching it to the list index
+      var currentDayPlan0Id = state.lists.lists[state.lists.currentDayPlans.days[0].list].id
+      var currentDayPlan1Id = state.lists.currentDayPlans.days.length > 1 ? state.lists.lists[state.lists.currentDayPlans.days[1].list].id : null
+      newlists.currentDayPlans.days[0].list = listMeta.findIndex(value => value.id === currentDayPlan0Id)
+      if (currentDayPlan1Id !== null) {
+        newlists.currentDayPlans.days[1].list = listMeta.findIndex(value => value.id === currentDayPlan1Id)
+      }
+
+      console.log(newlists)
+      commit('loadLists', newlists)
+      commit('setListsSaved', false)
+      await dispatch('dirty')
     }
   },
 
