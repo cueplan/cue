@@ -178,6 +178,15 @@ export default new Vuex.Store({
       var primaryListId = getters['primaryList/id']
       var activeIds = state.lists.collections['active'].map((index) => state.lists.lists[index].id)
       return activeIds.includes(primaryListId)
+    },
+
+    primaryListCurrentable: (state, getters) => {
+      if (typeof state.lists.collections === 'undefined') {
+        return false
+      }
+      var primaryListId = getters['primaryList/id']
+      var archiveIds = state.lists.collections['archive'].map((index) => state.lists.lists[index].id)
+      return archiveIds.includes(primaryListId)
     }
   },
 
@@ -217,6 +226,12 @@ export default new Vuex.Store({
     archiveList (state, listId) {
       var listIndex = state.lists.collections['active'].indexOf(state.lists.lists.findIndex(l => l.id === listId))
       state.lists.collections['archive'].splice(0, 0, state.lists.collections['active'].splice(listIndex, 1)[0])
+      state.listsSaved = false
+    },
+
+    makeListCurrent (state, listId) {
+      var listIndex = state.lists.collections['archive'].indexOf(state.lists.lists.findIndex(l => l.id === listId))
+      state.lists.collections['active'].splice(0, 0, state.lists.collections['archive'].splice(listIndex, 1)[0])
       state.listsSaved = false
     },
 
@@ -440,6 +455,11 @@ export default new Vuex.Store({
 
     async archiveList ({ commit, dispatch }, listId) {
       commit('archiveList', listId)
+      return dispatch('dirty')
+    },
+
+    async makeListCurrent ({ commit, dispatch }, listId) {
+      commit('makeListCurrent', listId)
       return dispatch('dirty')
     },
 

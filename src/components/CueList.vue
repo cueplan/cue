@@ -5,6 +5,7 @@
       <b-button v-if="namespace === 'secondaryList'" variant="primary" class="done-planning" @click.prevent="finishDayPlan">Finish Planning</b-button>
       <b-dropdown boundary="viewport" text="≡" right no-caret class="list-dropdown" variant="primary" toggleClass="list-toggle dropdown-toggle">
         <b-dropdown-item v-if="archivable" class="dropdown-item" @click.prevent="archive">Archive</b-dropdown-item>
+        <b-dropdown-item v-if="currentable" class="dropdown-item" @click.prevent="makeCurrent">Unarchive</b-dropdown-item>
         <b-dropdown-item v-if="isDebug" class="dropdown-item" @click.prevent="decrementDate">Decrement Date</b-dropdown-item>
       </b-dropdown>
       <small><span class="saving-status">{{ isSaved ? 'Saved' : 'Saving...' }}</span></small>
@@ -42,7 +43,7 @@ import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'cuelist',
-  props: ['namespace', 'archivable'],
+  props: ['namespace', 'archivable', 'currentable'],
   components: {
     draggable,
     singletodo: SingleTodo },
@@ -89,6 +90,10 @@ export default {
 
     archive () {
       this.$store.dispatch.bind(null, this.namespace + '/archive').apply(null, arguments)
+    },
+
+    makeCurrent () {
+      this.$store.dispatch.bind(null, this.namespace + '/makeCurrent').apply(null, arguments)
     },
 
     decrementDate () {

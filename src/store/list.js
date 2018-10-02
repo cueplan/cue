@@ -264,6 +264,10 @@ const listModule = {
       return dispatch('archiveList', state.list.id, { root: true })
     },
 
+    makeCurrent ({ dispatch, state }) {
+      return dispatch('makeListCurrent', state.list.id, { root: true })
+    },
+
     deleteTodo ({ commit, dispatch }, todoId) {
       commit('deleteTodo', todoId)
       return dispatch('dirty', null, { root: true })

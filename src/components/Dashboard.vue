@@ -5,7 +5,7 @@
         <navbar/>
       </b-col>
       <b-col sm>
-        <cuelist :namespace="'primaryList'" :archivable="primaryListArchivable"/>
+        <cuelist :namespace="'primaryList'" :archivable="primaryListArchivable" :currentable="primaryListCurrentable"/>
       </b-col>
       <b-col sm v-if="secondaryListLoaded">
         <cuelist :namespace="'secondaryList'"/>
@@ -30,7 +30,8 @@ export default {
       'isDirty'
     ]),
     ...mapGetters([
-      'primaryListArchivable' // TODO: move to store
+      'primaryListArchivable', // TODO: move to store
+      'primaryListCurrentable'
     ]),
 
     secondaryListLoaded: function () {
