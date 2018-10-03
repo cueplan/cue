@@ -605,9 +605,7 @@ export default new Vuex.Store({
       }
     },
 
-    // Debug
-    async debugAction ({ state, commit, dispatch }) {
-      // TODO: make this an account recovery command
+    async forceSync ({ state, commit, dispatch }) {
       // Read all documents in users lists collection, ignore lists doc and version doc
       // Put all documents into archive lists, in order of the id. Use name/date/id in lists collection
       // Leave currentDayPlans alone/empty
@@ -632,10 +630,13 @@ export default new Vuex.Store({
         newlists.currentDayPlans.days[1].list = listMeta.findIndex(value => value.id === currentDayPlan1Id)
       }
 
-      console.log(newlists)
       commit('loadLists', newlists)
       commit('setListsSaved', false)
       await dispatch('dirty')
+    },
+
+    // Debug
+    async debugAction ({ state, commit, dispatch }) {
     }
   },
 

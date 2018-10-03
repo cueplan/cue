@@ -7,6 +7,7 @@
     <b-dropdown-item @click.prevent="backupData">Backup Data</b-dropdown-item>
     <b-dropdown-item @click.prevent="$refs.restoreinput.click()">Restore From Backup ...</b-dropdown-item>
     <input type="file" ref="restoreinput" id="restoreinput" accept=".json" v-on:change="restoreBackup"/>
+    <b-dropdown-item @click.prevent="forceSync">Force Sync</b-dropdown-item>
     <b-dropdown-item v-if="isDebug" @click.prevent="debugAction">Debug Action</b-dropdown-item>
   </b-dropdown>
 </template>
@@ -29,7 +30,8 @@ export default {
   },
   methods: {
     ...mapActions([
-      'debugAction'
+      'debugAction',
+      'forceSync'
     ]),
     ...mapActions('user', [
       'signOut'
