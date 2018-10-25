@@ -2,7 +2,7 @@
   <b-card v-if="isLoaded" class="page-header" no-body>
     <div slot="header">
       <input id="listNameInput" ref="listNameInput" :readonly="!canChangeName" v-bind:value="name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
-      <b-dropdown boundary="viewport" text="≡" right no-caret class="list-dropdown" variant="primary" v-bind:toggleClass="{'list-toggle': true, 'dropdown-toggle': true, 'saved': isSaved}">
+      <b-dropdown boundary="viewport" text="≡" right no-caret class="list-dropdown" variant="primary" v-bind:toggleClass="'list-toggle dropdown-toggle' + (isSaved ? ' saved' : '')">
         <b-dropdown-item v-if="archivable" class="dropdown-item" @click.prevent="archive">Archive</b-dropdown-item>
         <b-dropdown-item v-if="currentable" class="dropdown-item" @click.prevent="makeCurrent">Unarchive</b-dropdown-item>
         <b-dropdown-item v-if="isDebug" class="dropdown-item" @click.prevent="decrementDate">Decrement Date</b-dropdown-item>

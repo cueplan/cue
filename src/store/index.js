@@ -46,6 +46,16 @@ var readFile = function (file) {
 
 var cleanupObject
 
+var days = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday'
+]
+
 var cleanupArray = function (arr) {
   for (var p in arr) {
     if (arr[p] instanceof Array) {
@@ -81,7 +91,8 @@ export default new Vuex.Store({
   modules: {
     user: userModule,
     primaryList: listModule,
-    secondaryList: listModule
+    secondaryList: listModule,
+    scratchList: listModule
   },
 
   state () {
@@ -110,6 +121,16 @@ export default new Vuex.Store({
         return {}
       }
       return { collection: 'archive', lists: state.lists.collections.archive.map(id => { return { name: state.lists.meta[id].name, id } }) }
+    },
+
+    dailyTicklers: (state, getters) => {
+      if (typeof state.lists.meta === 'undefined' || typeof state.lists.ticklers === 'undefined' || typeof state.lists.ticklers.daily === 'undefined') {
+        return {}
+      }
+      var day = (getters.currentDayPlanDate.getDay() + 1) % 7
+      var daily = state.lists.ticklers.daily
+      daily = daily.slice(day, daily.length).concat(daily.slice(0, day))
+      return { lists: daily.map(id => { return { name: state.lists.meta[id].name, id } }) }
     },
 
     currentDayPlanId: (state) => {
@@ -203,6 +224,16 @@ export default new Vuex.Store({
         meta: {},
         collections: { active: [], archive: [] }
       }
+      state.listsSaved = false
+    },
+
+    newTickler (state, list) {
+      if (typeof state.lists.ticklers === 'undefined') {
+        state.lists.ticklers = { daily: [], weekly: [], monthly: [], yearly: [] }
+      }
+
+      state.lists.meta[list.id] = { name: list.name }
+      state.lists.ticklers[list.tickler].push(list.id)
       state.listsSaved = false
     },
 
@@ -335,18 +366,12 @@ export default new Vuex.Store({
       return debouncedSave.flush() || Promise.resolve()
     },
 
-    save ({ commit, dispatch }) {
-      return dispatch('saveLists')
-      .then(() => {
-        return dispatch('primaryList/saveList')
-      })
-      .then(() => {
-        return dispatch('secondaryList/saveList')
-      })
-      .then(() => {
-        commit('setDirty', false)
-        return Promise.resolve()
-      })
+    async save ({ commit, dispatch }) {
+      await dispatch('saveLists')
+      await dispatch('primaryList/saveList')
+      await dispatch('secondaryList/saveList')
+      await dispatch('scratchList/saveList')
+      commit('setDirty', false)
     },
 
     // Meta specific
@@ -386,15 +411,12 @@ export default new Vuex.Store({
       await dispatch('forceSave')
     },
 
-    initializeLists ({ dispatch, commit, state }) {
+    async initializeLists ({ dispatch, commit, state }) {
       commit('initializeLists')
-      return dispatch('startDayPlan')
-      .then(() => {
-        return dispatch('forceSave')
-      })
-      .then(() => {
-        return state.api.setVersion({ version: 3 })
-      })
+      await dispatch('startDayPlan')
+      await dispatch('ensureTicklers')
+      await dispatch('forceSave')
+      await state.api.setVersion({ version: 3 })
     },
 
     async loadListsVersion2 ({ dispatch, commit, state, getters }) {
@@ -424,6 +446,11 @@ export default new Vuex.Store({
         await dispatch('forceSave')
       }
 
+      if (typeof lists.ticklers === 'undefined') {
+        await dispatch('ensureTicklers')
+        await dispatch('forceSave')
+      }
+
       primaryListId = primaryListId || getters.currentDayPlanId
       await dispatch('switchList', { namespace: 'primaryList', listId: primaryListId })
 
@@ -432,6 +459,19 @@ export default new Vuex.Store({
         await dispatch('switchList', { namespace: 'secondaryList', listId })
       } else if (secondaryListId != null) {
         dispatch('secondaryList/unload')
+      }
+    },
+
+    async ensureTicklers ({ dispatch, commit, state, getters }) {
+      console.log('ensuring')
+      if (typeof state.lists.ticklers === 'undefined') {
+        console.log('no ticklers')
+        for (var i = 0; i < 7; i++) {
+          await dispatch('scratchList/newList', { name: days[i] })
+          commit('newTickler', { id: getters['scratchList/id'], tickler: 'daily', name: getters['scratchList/name'] })
+        }
+        await dispatch('scratchList/unload')
+        await dispatch('forceSave')
       }
     },
 

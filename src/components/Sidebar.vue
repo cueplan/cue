@@ -2,14 +2,23 @@
   <div class="sidebar">
     <b-card class="today-card" no-body>
       <b-list-group flush>
-      <b-list-group-item :variant="currentDayPlanId === primaryListId ? 'primary' : ''">
-        <a @click.prevent="switchList({ namespace: 'primaryList', listId: currentDayPlanId })" href="#">{{ $store.getters.currentDayPlanName }}</a>
-      </b-list-group-item>
-      <b-list-group-item v-if="tomorrowDayPlanId" :variant="tomorrowDayPlanId === primaryListId ? 'primary' : ''">
-        <a @click.prevent="switchList({ namespace: 'primaryList', listId: tomorrowDayPlanId })" href="#">{{ $store.getters.tomorrowDayPlanName }}</a>
-      </b-list-group-item>
+        <b-list-group-item :variant="currentDayPlanId === primaryListId ? 'primary' : ''">
+          <a @click.prevent="switchList({ namespace: 'primaryList', listId: currentDayPlanId })" href="#">{{ $store.getters.currentDayPlanName }}</a>
+        </b-list-group-item>
+        <b-list-group-item v-if="tomorrowDayPlanId" :variant="tomorrowDayPlanId === primaryListId ? 'primary' : ''">
+          <a @click.prevent="switchList({ namespace: 'primaryList', listId: tomorrowDayPlanId })" href="#">{{ $store.getters.tomorrowDayPlanName }}</a>
+        </b-list-group-item>
       </b-list-group>
       <b-button v-if="!(tomorrowDayPlanId)" variant="link" @click.prevent="startDayPlan">Plan {{ dayPlanIsCurrent ? 'Tomorrow' : 'Today' }}</b-button>
+    </b-card>
+    <b-card no-body>
+      <b-list-group flush>
+        <b-list-group-item v-for="day in dailyTicklers.lists"
+          :key="day.id"
+          :variant="day.id === primaryListId ? 'primary' : ''">
+          <a @click.prevent="switchList({ namespace: 'primaryList', listId: day.id })" href="#">{{ day.name }}</a>
+        </b-list-group-item>
+      </b-list-group>
     </b-card>
     <b-card no-body>
       <b-tabs card v-model="collection">
@@ -49,7 +58,8 @@ export default {
       'archiveLists',
       'currentDayPlanId',
       'dayPlanIsCurrent',
-      'tomorrowDayPlanId'
+      'tomorrowDayPlanId',
+      'dailyTicklers'
     ])
   },
   mounted () {
@@ -65,7 +75,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.today-card {
+.card {
   margin-bottom: 20px;
 }
 </style>
