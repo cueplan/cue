@@ -36,9 +36,14 @@ body, #app {
 .dropdown-toggle {
   padding: 0px 0px;
   margin: 8px;
-  color: gray;
   background-color: white;
   border-radius: 4px;
+  color: $warning;
+}
+
+.saved {
+  color: $primary;
+  font-weight: bold;
 }
 
 .dropdown-toggle::after {
@@ -94,7 +99,9 @@ body, #app {
 }
 
 .done-planning {
-  vertical-align: bottom;
+  float: right;
+  margin-top: 3px;
+  margin-right: 5px;
 }
 
 .title-input {
