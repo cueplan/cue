@@ -347,3 +347,28 @@ button:focus {
   float: right;
   margin-top: 4px;
 }
+
+.todo-row {
+  display: inline-flex;
+}
+
+.todo-row .popover-fun {
+  color: initial;
+}
+
+.sink {
+  min-height: 25px;
+  display: none;
+}
+
+.dragging-todo .sink {
+  display: flex;
+  position: relative;
+  float: left;
+  width: 100%;
+  margin-top: -25px;
+}
+
+.sink .sortable-chosen {
+  display: none;
+}

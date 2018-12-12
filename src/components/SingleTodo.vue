@@ -119,14 +119,6 @@ label {
   }
 }
 
-.todo-row {
-  display: inline-flex;
-}
-
-.todo-row .popover-fun {
-  color: initial;
-}
-
 /* Customize the label (the container) */
 .todo-label {
   display: inline-flex;

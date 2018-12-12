@@ -13,10 +13,15 @@
     </b-card>
     <b-card no-body>
       <b-list-group flush>
-        <b-list-group-item v-for="day in dailyTicklers.lists"
+        <b-list-group-item v-for="(day, dayIndex) in dailyTicklers.lists"
           :key="day.id"
           :variant="day.id === primaryListId ? 'primary' : ''">
           <a @click.prevent="switchList({ namespace: 'primaryList', listId: day.id })" href="#">{{ day.name }}</a>
+          <draggable element="ul"
+            class="list-group sink"
+            v-model="ticklerSinks[dayIndex]"
+            :options="{draggable:'.draggable', handle:'.handle', group: { name: 'tasks', pull: 'clone', revertClone: true } }">
+          </draggable>
         </b-list-group-item>
       </b-list-group>
     </b-card>
@@ -46,7 +51,19 @@ export default {
   },
   data () {
     return {
-      collection: 0
+      collection: 0,
+      ticklerSinks: [[], [], [], [], [], [], []],
+      ticklerDragCount: [0, 0, 0, 0, 0, 0, 0]
+    }
+  },
+  watch: {
+    ticklerSinks: function (newValue, oldValue) {
+      var count = newValue.reduce((current, next) => current + next.length, 0)
+      if (count <= 0) return
+
+      this.$nextTick(function () {
+        this.flushTicklerSinks()
+      })
     }
   },
   computed: {
@@ -68,8 +85,16 @@ export default {
   methods: {
     ...mapActions([
       'switchList',
-      'startDayPlan'
-    ])
+      'startDayPlan',
+      'addTodosToList'
+    ]),
+
+    flushTicklerSinks () {
+      this.ticklerSinks.forEach((sink, index) => {
+        this.addTodosToList({ todos: sink, id: this.dailyTicklers.lists[index].id })
+      })
+      this.ticklerSinks = [[], [], [], [], [], [], []]
+    }
   }
 }
 </script>
@@ -78,4 +103,5 @@ export default {
 .card {
   margin-bottom: 20px;
 }
+
 </style>

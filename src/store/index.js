@@ -522,7 +522,7 @@ export default new Vuex.Store({
       if (getters['primaryList/id'] === listId || getters['secondaryList/id'] === listId) {
         return Promise.resolve()
       }
-      return dispatch(namespace + '/load', listId)
+      return dispatch(namespace + '/load', { listId })
     },
 
     newList ({ commit, dispatch, getters }, collection) {
@@ -533,6 +533,15 @@ export default new Vuex.Store({
         commit('newList', { id: getters['primaryList/id'], name, collection })
         return dispatch('dirty')
       })
+    },
+
+    async addTodosToList ({ dispatch, getters }, { todos, id }) {
+      await dispatch('scratchList/load', { listId: id, force: true })
+      var todoCount = getters['scratchList/todos'].length
+      await todos.forEach(async (srcTodo, index) => {
+        await dispatch('scratchList/addTodo', { dstIndex: todoCount + index, srcTodo })
+      })
+      await dispatch('scratchList/unload')
     },
 
     async archiveList ({ commit, dispatch }, listId) {

@@ -201,7 +201,7 @@ const listModule = {
       await dispatch('dirty', null, { root: true })
     },
 
-    async load ({ commit, dispatch, state, rootState }, listId) {
+    async load ({ commit, dispatch, state, rootState }, { listId, force }) {
       if (!state.isSaved) {
         await dispatch('forceSave', null, { root: true })
       }
@@ -213,6 +213,11 @@ const listModule = {
       var unsubscribe = rootState.api.onListSnapshot(listId.toString(), snapshot => {
         commit('load', snapshot)
       })
+
+      if (force) {
+        var data = await rootState.api.getList(listId.toString())
+        commit('load', data)
+      }
 
       commit('unsubscribe', unsubscribe)
     },

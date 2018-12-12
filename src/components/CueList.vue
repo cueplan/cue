@@ -13,9 +13,11 @@
     <draggable element="ul"
                class="list-group"
                v-model="todoOrder"
-               :options="{draggable:'.draggable', handle:'.handle', group: { name: 'tasks', pull: 'clone', revertClone: true } }"
+               :options="{draggable:'.draggable', handle:'.handle', group: { name: 'tasks', pull: this.pullDragged, revertClone: true } }"
+               @start="onDragStart"
                @end="onDragEnd"
-               @add="onDragAdd">
+               @add="onDragAdd"
+               @remove="onDragRemove">
       <singletodo
         v-for="(todo, todoId) in todoOrder"
         :todo="todo"
@@ -49,7 +51,8 @@ export default {
   data () {
     return {
       focusedId: null,
-      pendingFocusId: null
+      pendingFocusId: null,
+      shouldCloneDragged: false
     }
   },
   computed: {
@@ -69,11 +72,14 @@ export default {
     isSaved: function () {
       return this.$store.state[this.namespace].isSaved
     },
+    todos: function () {
+      return this.$store.getters[this.namespace + '/todos']
+    },
     name: function () {
       return this.$store.getters[this.namespace + '/name']
     },
-    todos: function () {
-      return this.$store.getters[this.namespace + '/todos']
+    date: function () {
+      return this.$store.getters[this.namespace + '/date']
     },
     canChangeName: function () {
       return this.$store.getters[this.namespace + '/canChangeName']
@@ -134,9 +140,25 @@ export default {
       this.focusedId = todoId + 1
     },
 
+    pullDragged (to, from) {
+      return this.shouldCloneDragged ? 'clone' : true
+    },
+
+    onDragStart (evt) {
+      this.shouldCloneDragged = this.date !== null // || evt.item.classList.contains('pinned')
+      this.$root.$el.classList.add('dragging-todo')
+    },
+
     onDragEnd (evt) {
+      this.$root.$el.classList.remove('dragging-todo')
       if (evt.from === evt.to) {
         this.reorderTodos({ oldIndex: evt.oldIndex, newIndex: evt.newIndex })
+      }
+    },
+
+    onDragRemove (evt) {
+      if (!this.shouldCloneDragged) {
+        this.$store.dispatch.bind(null, this.namespace + '/deleteTodo')(evt.oldIndex)
       }
     },
 
