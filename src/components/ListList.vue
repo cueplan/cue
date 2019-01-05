@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import draggable from 'vuedraggable'
+import draggable from '../plugins/Draggable.js'
 import { mapActions } from 'vuex'
 
 export default {

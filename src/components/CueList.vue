@@ -39,7 +39,7 @@
 
 <script>
 import SingleTodo from './SingleTodo.vue'
-import draggable from 'vuedraggable'
+import draggable from '../plugins/Draggable.js'
 import { mapState, mapActions } from 'vuex'
 
 export default {

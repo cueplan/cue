@@ -1,7 +1,7 @@
 import Vue from 'vue'
 
 import BootstrapVue from 'bootstrap-vue'
-import Draggable from 'vuedraggable'
+import Draggable from './plugins/Draggable.js'
 import VueRouter from 'vue-router'
 
 import App from './components/App'

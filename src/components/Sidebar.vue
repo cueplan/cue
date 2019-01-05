@@ -40,7 +40,7 @@
 
 <script>
 import ListList from './ListList.vue'
-import draggable from 'vuedraggable'
+import draggable from '../plugins/Draggable.js'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
