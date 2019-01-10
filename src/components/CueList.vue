@@ -141,6 +141,10 @@ export default {
     },
 
     pullDragged (to, from) {
+      if (typeof to.options !== 'undefined' && to.options.group.name !== from.options.group.name) {
+        return false
+      }
+
       return this.shouldCloneDragged ? 'clone' : true
     },
 

@@ -6,6 +6,7 @@
       :variant="list.id === primaryListId ? 'primary' : ''">
       <a @click.prevent="switchList({ namespace: 'primaryList', listId: list.id })" href="#">{{ list.name }}</a>
       <span class="handle">≡</span>
+      <tasksink :listId="list.id" />
     </b-list-group-item>
     <b-list-group-item slot="footer" class="new-list-item">
       <a @click.prevent="newList(lists.collection)" href="#">+ New List</a>
@@ -15,13 +16,15 @@
 
 <script>
 import draggable from '../plugins/Draggable.js'
+import tasksink from './TaskSink.vue'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'listlist',
   props: ['lists'],
   components: {
-    draggable
+    draggable,
+    tasksink
   },
   computed: {
     listOrder: {
