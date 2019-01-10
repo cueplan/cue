@@ -1,28 +1,28 @@
 <template>
-   <div class="todo-row draggable">
-        <b-dropdown text="≡" no-caret class="handle-dropdown" toggleClass="handle" offset="-20">
-          <b-dropdown-item class="dropdown-item" @click.prevent="deleteTodo(todoId)">Delete</b-dropdown-item>
-        </b-dropdown>
-        <div class="todo-label"
-          :class="{completed: todo.completed}">
-          <label>
-          <input type="checkbox" class="item-checkbox" v-model="completed"/>
-          <span class="checkmark" v-bind:class="{ border: todoText }" :id="'todo-'+todoId"></span>
-          </label>
-          <input
-            type="text"
-            v-model="todoText"
-            spellcheck=false
-            class="todo-input"
-            v-focus="focus"
-            @blur="$emit('todoBlurred', todoId)"
-            @focus="todoFocused"
-            @keyup.enter.prevent="insertAfter(todoId, $event)"
-            @keydown.delete="possibleDelete($event, todoId)"
-            @keydown.up.prevent="$emit('focusPrev', todoId)"
-            @keydown.down.prevent="$emit('focusNext', todoId)"/>
-        </div>
+  <div class="todo-row draggable">
+    <b-dropdown text="≡" no-caret class="handle-dropdown" toggleClass="handle" offset="-20">
+      <b-dropdown-item class="dropdown-item" @click.prevent="deleteTodo(todoId)">Delete</b-dropdown-item>
+    </b-dropdown>
+    <div class="todo-label"
+      :class="{completed: todo.completed}">
+      <label>
+      <input type="checkbox" class="item-checkbox" v-model="completed"/>
+      <span class="checkmark" v-bind:class="{ border: todoText }" :id="'todo-'+todoId"></span>
+      </label>
+      <input
+        type="text"
+        v-model="todoText"
+        spellcheck=false
+        class="todo-input"
+        v-focus="focus"
+        @blur="$emit('todoBlurred', todoId)"
+        @focus="todoFocused"
+        @keyup.enter.prevent="insertAfter(todoId, $event)"
+        @keydown.delete="possibleDelete($event, todoId)"
+        @keydown.up.prevent="$emit('focusPrev', todoId)"
+        @keydown.down.prevent="$emit('focusNext', todoId)"/>
     </div>
+  </div>
 </template>
 
 <script>
