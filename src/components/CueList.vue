@@ -32,6 +32,7 @@
         v-on:todoFocused="todoFocused"
         v-on:focusPrev="focusPrevTodo"
         v-on:focusNext="focusNextTodo"
+        v-on:pinTodo="pinTodo"
       />
     </draggable>
   </b-card>
@@ -125,6 +126,10 @@ export default {
       this.$store.dispatch.bind(null, this.namespace + '/changeTodoText').apply(null, arguments)
     },
 
+    pinTodo () {
+      this.$store.dispatch.bind(null, this.namespace + '/pinTodo').apply(null, arguments)
+    },
+
     insertTodoAfter () {
       this.$store.dispatch.bind(null, this.namespace + '/insertTodoAfter').apply(null, arguments)
     },
@@ -149,7 +154,7 @@ export default {
     },
 
     onDragStart (evt) {
-      this.shouldCloneDragged = this.date !== null // || evt.item.classList.contains('pinned')
+      this.shouldCloneDragged = !evt.item.classList.contains('unpinned')
       this.$root.$el.classList.add('dragging-todo')
     },
 

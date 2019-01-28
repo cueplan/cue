@@ -134,8 +134,13 @@ const listModule = {
       state.isSaved = false
     },
 
+    pinTodo (state, { todoId, value }) {
+      state.list.todos[todoId].pinned = value
+      state.isSaved = false
+    },
+
     insertTodoAfter (state, { todoId, value }) {
-      state.list.todos.splice(todoId + 1, 0, { id: state.list.todos.length + 1, text: value || '', status: 'incomplete' })
+      state.list.todos.splice(todoId + 1, 0, { id: state.list.todos.length + 1, text: value || '', status: 'incomplete', pinned: state.list.date !== null })
       state.isSaved = false
     },
 
@@ -145,7 +150,7 @@ const listModule = {
     },
 
     addTodo (state, { dstIndex, srcTodo }) {
-      state.list.todos.splice(dstIndex, 0, { id: dstIndex, text: srcTodo.text || '', status: 'incomplete' })
+      state.list.todos.splice(dstIndex, 0, { id: dstIndex, text: srcTodo.text || '', status: 'incomplete', pinned: state.list.date !== null })
       state.isSaved = false
     },
 
@@ -285,6 +290,11 @@ const listModule = {
 
     changeTodoText ({ commit, dispatch }, { todoId, value }) {
       commit('changeTodoText', { todoId, value })
+      return dispatch('dirty', null, { root: true })
+    },
+
+    pinTodo ({ commit, dispatch }, { todoId, value }) {
+      commit('pinTodo', { todoId, value })
       return dispatch('dirty', null, { root: true })
     },
 

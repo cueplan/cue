@@ -1,5 +1,5 @@
 <template>
-  <div class="todo-row draggable">
+  <div class="todo-row draggable" :class="{ unpinned: !todo.pinned }">
     <b-dropdown text="≡" no-caret class="handle-dropdown" toggleClass="handle" offset="-20">
       <b-dropdown-item class="dropdown-item" @click.prevent="deleteTodo(todoId)">Delete</b-dropdown-item>
     </b-dropdown>
@@ -22,6 +22,7 @@
         @keydown.up.prevent="$emit('focusPrev', todoId)"
         @keydown.down.prevent="$emit('focusNext', todoId)"/>
     </div>
+    <span class="pushpin" @click.prevent="$emit('pinTodo', {todoId, value: !todo.pinned })">&#x1f4cc;</span>
   </div>
 </template>
 
@@ -82,6 +83,17 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
 @import "../assets/sass/variables";
+
+.pushpin {
+  font-family: "Segoe UI Symbol";
+  margin: 0px 5px;
+  color: rgba($primary, 0.8);
+  cursor: pointer;
+}
+
+.unpinned .pushpin {
+  color: rgba($primary, 0.10)
+}
 
 .todo-label {
   padding: 2px 2px;
