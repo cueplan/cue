@@ -62,7 +62,7 @@ const listModule = {
       state.list = {
         name: name,
         id: listId,
-        todos: [ { id: 0, text: '', status: 'incomplete' } ],
+        todos: [ { id: 0, text: '', status: 'incomplete', pinned: date !== null } ],
         date: date
       }
       state.isLoaded = true
@@ -71,27 +71,27 @@ const listModule = {
 
     newInstructions (state) {
       state.list.todos = [
-        { id: 0, text: 'Welcome to Cue!', status: 'incomplete' },
-        { id: 1, text: 'Each line is one entry in a daily plan', status: 'incomplete' },
-        { id: 2, text: 'Each entry can be checked off, moved, or deleted', status: 'incomplete' },
-        { id: 3, text: '', status: 'incomplete' },
-        { id: 4, text: 'Leave a blank line, like the one above, to naturally group things together', status: 'incomplete' },
-        { id: 5, text: '', status: 'incomplete' },
-        { id: 6, text: 'Right now you\'re in planning mode for today (the list to the right)', status: 'incomplete' },
-        { id: 7, text: 'You can drag entries from one day to the next when planning', status: 'incomplete' },
-        { id: 8, text: 'Try it out by dragging the entry below to your plan for today', status: 'incomplete' },
-        { id: 9, text: '', status: 'incomplete' },
-        { id: 10, text: 'Plan tomorrow', status: 'incomplete' },
-        { id: 11, text: '', status: 'incomplete' },
-        { id: 12, text: 'Then fill in the plan for today by adding anything else you\'re going to do', status: 'incomplete' },
-        { id: 13, text: '', status: 'incomplete' },
-        { id: 14, text: 'You can start small, and just list your three most important tasks', status: 'incomplete' },
-        { id: 15, text: '', status: 'incomplete' },
-        { id: 16, text: 'Or flesh out a detailed plan that also lists important appointments, meals, and daily habits.', status: 'incomplete' },
-        { id: 17, text: '', status: 'incomplete' },
-        { id: 18, text: 'Either way, it should only take a few minutes to plan.', status: 'incomplete' },
-        { id: 19, text: '', status: 'incomplete' },
-        { id: 20, text: 'When you are done, click \'Finish Planning\'. These instructions will move to the archive.', status: 'incomplete' }
+        { id: 0, text: 'Welcome to Cue!', status: 'incomplete', pinned: true },
+        { id: 1, text: 'Each line is one entry in a daily plan', status: 'incomplete', pinned: true },
+        { id: 2, text: 'Each entry can be checked off, moved, or deleted', status: 'incomplete', pinned: true },
+        { id: 3, text: '', status: 'incomplete', pinned: true },
+        { id: 4, text: 'Leave a blank line, like the one above, to naturally group things together', status: 'incomplete', pinned: true },
+        { id: 5, text: '', status: 'incomplete', pinned: true },
+        { id: 6, text: 'Right now you\'re in planning mode for today (the list to the right)', status: 'incomplete', pinned: true },
+        { id: 7, text: 'You can drag entries from one day to the next when planning', status: 'incomplete', pinned: true },
+        { id: 8, text: 'Try it out by dragging the entry below to your plan for today', status: 'incomplete', pinned: true },
+        { id: 9, text: '', status: 'incomplete', pinned: true },
+        { id: 10, text: 'Plan tomorrow', status: 'incomplete', pinned: true },
+        { id: 11, text: '', status: 'incomplete', pinned: true },
+        { id: 12, text: 'Then fill in the plan for today by adding anything else you\'re going to do', status: 'incomplete', pinned: true },
+        { id: 13, text: '', status: 'incomplete', pinned: true },
+        { id: 14, text: 'You can start small, and just list your three most important tasks', status: 'incomplete', pinned: true },
+        { id: 15, text: '', status: 'incomplete', pinned: true },
+        { id: 16, text: 'Or flesh out a detailed plan that also lists important appointments, meals, and daily habits.', status: 'incomplete', pinned: true },
+        { id: 17, text: '', status: 'incomplete', pinned: true },
+        { id: 18, text: 'Either way, it should only take a few minutes to plan.', status: 'incomplete', pinned: true },
+        { id: 19, text: '', status: 'incomplete', pinned: true },
+        { id: 20, text: 'When you are done, click \'Finish Planning\'. These instructions will move to the archive.', status: 'incomplete', pinned: true }
       ]
     },
 
@@ -119,7 +119,7 @@ const listModule = {
     deleteTodo (state, todoId) {
       state.list.todos.splice(todoId, 1)
       if (state.list.todos.length === 0) {
-        state.list.todos.splice(0, 0, { id: 0, text: '', status: 'incomplete' })
+        state.list.todos.splice(0, 0, { id: 0, text: '', status: 'incomplete', pinned: state.list.date !== null })
       }
       state.isSaved = false
     },
