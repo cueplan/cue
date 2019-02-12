@@ -22,7 +22,7 @@
         @keydown.up.prevent="$emit('focusPrev', todoId)"
         @keydown.down.prevent="$emit('focusNext', todoId)"/>
     </div>
-    <span class="pushpin" @click.prevent="$emit('pinTodo', {todoId, value: !todo.pinned })">&#x1f4cc;</span>
+    <i class="fas fa-thumbtack pushpin" @click.prevent="$emit('pinTodo', {todoId, value: !todo.pinned })"></i>
   </div>
 </template>
 
@@ -85,8 +85,7 @@ export default {
 @import "../assets/sass/variables";
 
 .pushpin {
-  font-family: "Segoe UI Symbol";
-  margin: 0px 5px;
+  margin: 4px 5px;
   color: rgba($primary, 0.8);
   cursor: pointer;
 }
