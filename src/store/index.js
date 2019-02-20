@@ -207,6 +207,13 @@ export default new Vuex.Store({
       }
       var primaryListId = getters['primaryList/id']
       return state.lists.collections['archive'].includes(primaryListId)
+    },
+
+    isTicklerList: (state) => (listId) => {
+      return state.lists.ticklers.daily.includes(listId) ||
+        state.lists.ticklers.weekly.includes(listId) ||
+        state.lists.ticklers.monthly.includes(listId) ||
+        state.lists.ticklers.yearly.includes(listId)
     }
   },
 

@@ -41,11 +41,16 @@ const listModule = {
       return new Date(state.list.date)
     },
 
-    canChangeName: (state) => {
-      if (typeof state.list.date === 'undefined' || state.list.date === null) {
-        return true
+    canChangeName: (state, _getters, _rootState, rootGetters) => {
+      if (typeof state.list.date !== 'undefined' && state.list.date !== null) {
+        return false
       }
-      return false
+
+      if (rootGetters.isTicklerList(state.list.id)) {
+        return false
+      }
+
+      return true
     }
   },
 
