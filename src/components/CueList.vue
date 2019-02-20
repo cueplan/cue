@@ -1,7 +1,7 @@
 <template>
   <b-card v-if="isLoaded" class="page-header" no-body>
     <div slot="header">
-      <input id="listNameInput" ref="listNameInput" :readonly="!canChangeName" v-bind:value="name" spellcheck=false class="title-input" @keyup.enter.prevent="editListNameKeyUp" @blur.prevent="editListNameBlur"/>
+      <contenteditable  tag="span" :contenteditable="canChangeName" ref="listNameInput" v-model="name" class="title-input" :noNL="true" @returned="editListNameKeyUp" @blur.prevent="editListNameBlur"></contenteditable>
       <b-dropdown boundary="viewport" text="≡" right no-caret class="list-dropdown" variant="primary" v-bind:toggleClass="'list-toggle dropdown-toggle' + (isSaved ? ' saved' : '')">
         <b-dropdown-item v-if="archivable" class="dropdown-item" @click.prevent="archive">Archive</b-dropdown-item>
         <b-dropdown-item v-if="currentable" class="dropdown-item" @click.prevent="makeCurrent">Unarchive</b-dropdown-item>
@@ -41,6 +41,7 @@
 <script>
 import SingleTodo from './SingleTodo.vue'
 import draggable from '../plugins/Draggable.js'
+import contenteditable from './ContentEditable.vue'
 import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -48,7 +49,8 @@ export default {
   props: ['namespace', 'archivable', 'currentable'],
   components: {
     draggable,
-    singletodo: SingleTodo },
+    singletodo: SingleTodo,
+    contenteditable },
   data () {
     return {
       focusedId: null,
@@ -76,8 +78,12 @@ export default {
     todos: function () {
       return this.$store.getters[this.namespace + '/todos']
     },
-    name: function () {
-      return this.$store.getters[this.namespace + '/name']
+    name: {
+      get: function () {
+        return this.$store.getters[this.namespace + '/name']
+      },
+      set: function (value) {
+      }
     },
     date: function () {
       return this.$store.getters[this.namespace + '/date']
@@ -194,12 +200,15 @@ export default {
     },
 
     editListNameKeyUp (e) {
+      console.log(e)
       this.editListNameBlur(e)
-      this.$refs.listNameInput.blur()
+      this.$refs.listNameInput.$el.blur()
     },
 
     editListNameBlur (e) {
-      this.changeName(this.$refs.listNameInput.value.trim())
+      console.log(e)
+      console.log(this.$refs.listNameInput)
+      this.changeName(this.$refs.listNameInput.$el.innerText.trim())
     }
   }
 }
