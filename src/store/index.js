@@ -436,7 +436,7 @@ export default new Vuex.Store({
         state.unsubscribe()
       }
 
-      var unsubscribe = state.api.onListsSnapshot(snapshot => {
+      var unsubscribe = await state.api.onListsSnapshot(snapshot => {
         dispatch('snapshotLists', snapshot)
       })
 
@@ -510,7 +510,7 @@ export default new Vuex.Store({
       await state.api.updateLists(state.lists)
 
       if (state.unsubscribe == null) {
-        var unsubscribe = state.api.onListsSnapshot(snapshot => {
+        var unsubscribe = await state.api.onListsSnapshot(snapshot => {
           dispatch('snapshotLists', snapshot)
         })
 

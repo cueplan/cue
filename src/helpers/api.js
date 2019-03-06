@@ -21,7 +21,7 @@ export default class {
     return await this.firebase.getDocument('lists')
   }
 
-  onListsSnapshot (callback) {
+  async onListsSnapshot (callback) {
     return this.firebase.onSnapshot('lists', callback)
   }
 
@@ -33,7 +33,7 @@ export default class {
     return await this.firebase.getDocument(id)
   }
 
-  onListSnapshot (id, callback) {
+  async onListSnapshot (id, callback) {
     return this.firebase.onSnapshot(id, callback)
   }
 

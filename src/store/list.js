@@ -165,23 +165,21 @@ const listModule = {
   },
 
   actions: {
-    saveList ({ commit, state, rootState }) {
+    async saveList ({ commit, state, rootState }) {
       if (state.isSaved) {
-        return Promise.resolve()
+        return
       }
 
-      return rootState.api.updateList(state.list.id.toString(), state.list)
-      .then(() => {
-        commit('setSaved', true)
-        if (state.unsubscribe == null) {
-          var unsubscribe = rootState.api.onListSnapshot(state.list.id.toString(), snapshot => {
-            commit('load', snapshot)
-          })
+      await rootState.api.updateList(state.list.id.toString(), state.list)
+      commit('setSaved', true)
+      if (state.unsubscribe == null) {
+        var unsubscribe = await rootState.api.onListSnapshot(state.list.id.toString(), snapshot => {
+          commit('load', snapshot)
+        })
 
-          commit('unsubscribe', unsubscribe)
-        }
-        return Promise.resolve()
-      })
+        commit('unsubscribe', unsubscribe)
+      }
+      return
     },
 
     async newList ({ commit, dispatch, state }, { name, date }) {
@@ -220,7 +218,7 @@ const listModule = {
         state.unsubscribe()
       }
 
-      var unsubscribe = rootState.api.onListSnapshot(listId.toString(), snapshot => {
+      var unsubscribe = await rootState.api.onListSnapshot(listId.toString(), snapshot => {
         commit('load', snapshot)
       })
 
