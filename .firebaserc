@@ -1,7 +1,0 @@
-{
-  "projects": {
-    "default": "cue-plan-backend",
-    "beta": "cue-beta-environment",
-    "production": "cue-plan-backend"
-  }
-}

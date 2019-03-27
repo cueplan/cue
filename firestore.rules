@@ -3,6 +3,9 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
+    match /features/{feature} {
+      allow read: if true;
+    }
     match /environments/{env} {
     	match /users/{userId} {
         allow read, update, delete: if request.auth.uid == userId;

@@ -6,3 +6,4 @@ yarn-debug.log*
 yarn-error.log*
 config.js
 .firebase/
+.firebaserc
