@@ -11,14 +11,13 @@ export default {
   name: 'auth',
   mounted () {
     var uiConfig = {
-      signInSuccessUrl: '/',
       signInOptions: [
         firebase.auth.EmailAuthProvider.PROVIDER_ID
       ],
       credentialHelper: firebaseui.auth.CredentialHelper.NONE,
       callbacks: {
         signInSuccessWithAuthResult: function (authResult, redirectUrl) {
-          return true
+          return false
         }
       }
     }

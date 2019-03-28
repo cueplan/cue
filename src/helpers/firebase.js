@@ -31,32 +31,24 @@ export default class {
     }
   }
 
-  async isUserSignedIn () {
+  async listenAuthChange (callback) {
     await this.ensureInitialized()
-
-    if (this.authStateChanged) {
-      return this.user != null
-    }
 
     var self = this
 
-    return new Promise(function (resolve, reject) {
-      self.userSignedInObserver = firebase.auth().onAuthStateChanged((user) => {
-        self.authStateChanged = true
-        if (user) {
-          var photoUrl = user.photoUrl
-          if (photoUrl == null || photoUrl === '') {
-            photoUrl = gravatar.url(user.email, {protocol: 'https'})
-            user.updateProfile({ photoUrl: photoUrl })
-          }
-          self.user = { displayName: user.displayName, uid: user.uid, avatarUrl: photoUrl }
-        } else {
-          self.user = null
+    self.userSignedInObserver = firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        var photoUrl = user.photoUrl
+        if (photoUrl == null || photoUrl === '') {
+          photoUrl = gravatar.url(user.email, {protocol: 'https'})
+          user.updateProfile({ photoUrl: photoUrl })
         }
+        self.user = { displayName: user.displayName, uid: user.uid, avatarUrl: photoUrl }
+      } else {
+        self.user = null
+      }
 
-        self.userSignedInObserver() // unsubscribe
-        resolve(self.user != null)
-      })
+      callback(self.user)
     })
   }
 

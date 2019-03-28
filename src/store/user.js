@@ -21,7 +21,7 @@ const userModule = {
   mutations: {
     signIn (state, user) {
       state.user = user
-      state.isSignedOut = false
+      state.isSignedOut = user === null
     },
 
     signOut (state) {
@@ -32,23 +32,12 @@ const userModule = {
 
   actions: {
     async signIn ({ commit, rootState }) {
-      if (await rootState.api.isUserSignedIn()) {
-        var user = { username: '', avatarUrl: null }
-        try {
-          user = await rootState.api.getUser()
-        } catch (err) {
-          console.error(err)
-        }
+      await rootState.api.listenAuthChange((user) => {
         commit('signIn', user)
-      } else {
-        commit('signOut')
-      }
-
-      return Promise.resolve()
+      })
     },
 
     signOut ({ commit, rootState }) {
-      commit('signOut')
       rootState.api.signUserOut()
     }
   }

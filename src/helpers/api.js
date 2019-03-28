@@ -5,12 +5,8 @@ export default class {
     this.firebase = new Firebase()
   }
 
-  async isUserSignedIn () {
-    if (await this.firebase.isUserSignedIn()) {
-      return true
-    }
-
-    return false
+  async listenAuthChange (callback) {
+    return await this.firebase.listenAuthChange(callback)
   }
 
   async updateLists (lists) {
