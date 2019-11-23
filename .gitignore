@@ -7,3 +7,6 @@ yarn-error.log*
 config.js
 .firebase/
 .firebaserc
+tools/local_db.json
+tools/Cue Dev Rock-97c02404d544.json
+firebase-debug.log

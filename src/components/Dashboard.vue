@@ -4,10 +4,10 @@
       <b-col sm="auto">
         <navbar/>
       </b-col>
-      <b-col sm>
+      <b-col sm class="px-0 px-sm-3">
         <cuelist :namespace="'primaryList'" :archivable="primaryListArchivable" :currentable="primaryListCurrentable"/>
       </b-col>
-      <b-col sm v-if="secondaryListLoaded">
+      <b-col sm class="px-0 px-sm-3" v-if="secondaryListLoaded">
         <cuelist :namespace="'secondaryList'"/>
       </b-col>
     </b-row>

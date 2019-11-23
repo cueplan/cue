@@ -1,28 +1,31 @@
 <template>
   <div class="todo-row draggable" :class="{ unpinned: !todo.pinned }">
-    <b-dropdown text="≡" no-caret class="handle-dropdown" toggleClass="handle" offset="-20">
-      <b-dropdown-item class="dropdown-item" @click.prevent="deleteTodo(todoId)">Delete</b-dropdown-item>
-    </b-dropdown>
-    <div class="todo-label"
-      :class="{completed: todo.completed}">
-      <label>
-      <input type="checkbox" class="item-checkbox" v-model="completed"/>
-      <span class="checkmark" v-bind:class="{ border: todoText }" :id="'todo-'+todoId"></span>
-      </label>
-      <input
-        type="text"
-        v-model="todoText"
-        spellcheck=false
-        class="todo-input"
-        v-focus="focus"
-        @blur="$emit('todoBlurred', todoId)"
-        @focus="todoFocused"
-        @keyup.enter.prevent="insertAfter(todoId, $event)"
-        @keydown.delete="possibleDelete($event, todoId)"
-        @keydown.up.prevent="$emit('focusPrev', todoId)"
-        @keydown.down.prevent="$emit('focusNext', todoId)"/>
+    <div class="todo-firstline">
+      <div class="todo-label"
+        :class="{completed: todo.completed}">
+        <label>
+        <input type="checkbox" class="item-checkbox" v-model="completed"/>
+        <span class="checkmark" v-bind:class="{ border: todoText }" :id="'todo-'+todoId"></span>
+        </label>
+        <input
+          type="text"
+          v-model="todoText"
+          spellcheck=false
+          class="todo-input"
+          v-focus="focus"
+          @blur="$emit('todoBlurred', todoId)"
+          @focus="todoFocused"
+          @keyup.enter.prevent="insertAfter(todoId, $event)"
+          @keydown.delete="possibleDelete($event, todoId)"
+          @keydown.up.prevent="$emit('focusPrev', todoId)"
+          @keydown.down.prevent="$emit('focusNext', todoId)"/>
+      </div>
+      <i class="fas fa-bars handle" v-b-toggle="'todo-collapse-' + todoId"></i>
     </div>
-    <i class="fas fa-thumbtack pushpin" @click.prevent="$emit('pinTodo', {todoId, value: !todo.pinned })"></i>
+    <b-collapse :id="'todo-collapse-' + todoId" class="todo-secondline">
+      <i class="fas fa-trash pushpin" @click.prevent="deleteTodo(todoId)"></i>
+      <i class="fas fa-thumbtack pushpin" @click.prevent="$emit('pinTodo', {todoId, value: !todo.pinned })"></i>
+    </b-collapse>
   </div>
 </template>
 
@@ -84,6 +87,14 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/sass/variables";
 
+.todo-secondline {
+  text-align: right;
+}
+
+.fas {
+  font-size: 1.5rem;
+}
+
 .pushpin {
   margin: 4px 5px;
   color: rgba($primary, 0.8);
@@ -134,7 +145,7 @@ label {
 .todo-label {
   display: inline-flex;
   position: relative;
-  padding: 0px 0px 1px 29px;
+  padding: 0px 0px 1px 43px;
   cursor: pointer;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -158,8 +169,8 @@ label {
   position: absolute;
   top: 1px;
   left: 4px;
-  height: 21px;
-  width: 21px;
+  height: 35px;
+  width: 35px;
   background-color: #fff;
   border-radius: 3px;
   border-style: solid;
@@ -194,12 +205,12 @@ label {
 
 /* Style the checkmark/indicator */
 .todo-label .checkmark:after {
-  left: 7px;
-  top: 3px;
-  width: 6px;
-  height: 10px;
+  left: 12px;
+  top: 5px;
+  width: 12px;
+  height: 20px;
   border: solid $primary;
-  border-width: 0 3px 3px 0;
+  border-width: 0 6px 6px 0;
   -webkit-transform: rotate(45deg);
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);

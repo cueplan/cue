@@ -228,6 +228,10 @@ label {
   }
 }
 
+.card-header {
+  padding: .75em;
+}
+
 .page-header .list-group {
   margin-top: 5px;
   margin-bottom: 5px;
