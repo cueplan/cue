@@ -10,6 +10,9 @@ Vue.use(Vuex)
 
 const debug = process.env.NODE_ENV !== 'production'
 const listsFile = 'lists.json'
+const currentplansFile = 'currentplans.json'
+const ticklersFile = 'ticklers.json'
+const activeFile = 'active.json'
 const dataVersionFile = 'version.json'
 
 var debouncedSave = lodash.debounce((dispatch) => {
@@ -636,11 +639,35 @@ export default new Vuex.Store({
 
     // Backup/Restore
     backupData ({ dispatch, state }) {
+      var listIds = []
+      listIds.push(...state.lists.collections.active)
+      listIds.push(...state.lists.collections.archive)
+      listIds.push(...state.lists.currentDayPlans.days.map((d) => { return d.id.toString() }))
+      listIds.push(...state.lists.ticklers.daily.map((id) => { return id.toString() }))
+
       var listsToBackup = []
       listsToBackup.push({
-        contents: JSON.parse(JSON.stringify(state.lists)),
+        contents: { lists: listIds },
         encrypt: true,
         path: listsFile,
+        automerge: false
+      })
+      listsToBackup.push({
+        contents: JSON.parse(JSON.stringify(state.lists.collections.active)),
+        encrypt: true,
+        path: activeFile,
+        automerge: false
+      })
+      listsToBackup.push({
+        contents: JSON.parse(JSON.stringify(state.lists.currentDayPlans)),
+        encrypt: true,
+        path: currentplansFile,
+        automerge: false
+      })
+      listsToBackup.push({
+        contents: JSON.parse(JSON.stringify(state.lists.ticklers.daily)),
+        encrypt: true,
+        path: ticklersFile,
         automerge: false
       })
       listsToBackup.push({
@@ -660,8 +687,8 @@ export default new Vuex.Store({
         return Promise.resolve(lists)
       }
 
-      var listPath = '/lists/' + lists[0].contents.lists[lists.currentList].id + '.json'
-      return state.api.getList(lists[0].contents.lists[lists.currentList].id.toString())
+      var listPath = '/lists/' + lists[0].contents.lists[lists.currentList] + '.json'
+      return state.api.getList(lists[0].contents.lists[lists.currentList].toString())
       .then((currentList) => {
         lists.push({
           contents: removeObjectIds(currentList),
@@ -705,7 +732,7 @@ export default new Vuex.Store({
       // Put all documents into archive lists, in order of the id. Use name/date/id in lists collection
       // Leave currentDayPlans alone/empty
       var listMeta = await state.api.getListMetadata()
-      var archiveIndices = listMeta.map((value, index) => index)
+      var archiveIndices = Object.keys(listMeta)
       archiveIndices.reverse()
       var newlists = {
         meta: listMeta,
@@ -713,8 +740,13 @@ export default new Vuex.Store({
         currentDayPlans: JSON.parse(JSON.stringify(state.lists.currentDayPlans))
       }
 
-      await Promise.all(listMeta.map(value => {
-        return state.api.synchronizeListId(value.id.toString())
+      newlists.currentDayPlans.days[0].date = new Date(newlists.currentDayPlans.days[0].date)
+      if (newlists.currentDayPlans.days.length > 1) {
+        newlists.currentDayPlans.days[1].date = new Date(newlists.currentDayPlans.days[1].date)
+      }
+
+      await Promise.all(archiveIndices.map(value => {
+        return state.api.synchronizeListId(value)
       }))
 
       // Preserve current day plans by finding the list id that we used to have and matching it to the list index

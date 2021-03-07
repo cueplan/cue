@@ -101,10 +101,10 @@ export default class {
     await this.ensureInitialized()
 
     var listsSnapshot = await db.collection('environments').doc(environment).collection('users').doc(this.user.uid).collection('lists').where(firebase.firestore.FieldPath.documentId(), '<=', '9999999999999').get()
-    var docIds = []
+    var docIds = {}
     listsSnapshot.forEach(doc => {
       var data = doc.data()
-      docIds.push({ id: Number(doc.id), name: data.name || 'Untitled List' })
+      docIds[doc.id] = { name: data.name || 'Untitled List' }
     })
 
     return docIds
